@@ -25,6 +25,7 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
   const setQuery = useSearchStore((s) => s.setQuery);
   const runSearch = useSearchStore((s) => s.search);
   const setReturnTo = useUiStore((s) => s.setReturnTo);
+  const setReturnTo = useUiStore((s) => s.setReturnTo);
 
   // Suggestion state (only active when the input isn't a URL)
   const [activeIndex, setActiveIndex] = useState(-1);

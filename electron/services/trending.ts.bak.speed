@@ -18,9 +18,9 @@ const log = createLogger('trending');
 /** How many items to fetch per query */
 const PER_QUERY = 6;
 /** Max simultaneous yt-dlp processes (batching) */
-const CONCURRENCY = 6;
+const CONCURRENCY = 4;
 /** Cache TTL (15 minutes) */
-const CACHE_TTL_MS = 45 * 60 * 1000;
+const CACHE_TTL_MS = 15 * 60 * 1000;
 
 /** Curated "trending" queries — mixes regions and genres. */
 const TRENDING_QUERIES = [
@@ -114,19 +114,17 @@ async function runQuery(
     '--dump-single-json',
     '--flat-playlist',
     '--no-warnings',
-    '--extractor-retries', '0',
-    '--socket-timeout', '10',
-    '--no-check-certificates',
-    '--geo-bypass',
-    '--geo-bypass-country', region,
-    '--playlist-end', String(PER_QUERY),
+    '--playlist-end',
+    String(PER_QUERY),
+    '--geo-bypass-country',
+    region,
     `ytsearch${PER_QUERY}:${query}`,
   ];
 
   try {
     const { stdout } = await execFileAsync(bin, args, {
       maxBuffer: 1024 * 1024 * 32,
-      timeout: 15_000,
+      timeout: 30_000,
     });
     const raw = JSON.parse(stdout) as RawResponse;
     return (raw.entries ?? []).map(mapEntry);

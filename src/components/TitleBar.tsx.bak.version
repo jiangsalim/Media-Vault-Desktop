@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Custom frameless titlebar. Monochrome, minimal.
  * □ — ✕ window controls, thin 1px borders, IBM Plex Mono.
  */
@@ -9,7 +9,7 @@ export function TitleBar() {
         <span className="text-xs font-bold uppercase tracking-widest text-text-primary">
           HERMAN SOFTWARE
         </span>
-        <span className="text-[10px] text-muted">v1.0.0</span>
+        <span className="text-[10px] text-muted">v2.0.0</span>
       </div>
 
       <div className="no-drag flex items-center">

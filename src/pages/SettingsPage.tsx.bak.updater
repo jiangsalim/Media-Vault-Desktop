@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import {
   FolderOpen,
   CheckCircle2,
@@ -11,8 +11,6 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useUiStore } from '@/store/useUiStore';
 import { Select } from '@/components/Select';
 import { cn } from '@/lib/cn';
-import { useUpdateStatus } from '@/hooks/useUpdateStatus';
-import { CheckCircle2 as CheckIcon2, Download as DownloadIcon, Loader2 as LoaderIcon, RotateCw } from 'lucide-react';
 import {
   VIDEO_QUALITIES,
   VIDEO_CONTAINERS,
@@ -38,7 +36,6 @@ export function SettingsPage() {
   const refreshDeps = useSettingsStore((s) => s.refreshDeps);
   const toast = useUiStore((s) => s.toast);
   const [checking, setChecking] = useState(false);
-  const updater = useUpdateStatus();
 
   if (!settings) return null;
 
@@ -75,13 +72,6 @@ export function SettingsPage() {
         className="input-bordered w-full max-w-sm text-xs"
         aria-label="Search settings"
       />
-
-      <div className="divider" />
-
-      {/* Updates */}
-      <Section title="Updates">
-        <UpdatePanel />
-      </Section>
 
       <div className="divider" />
 
@@ -300,123 +290,5 @@ function Toggle({
         />
       </span>
     </button>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*                           Updates panel                            */
-/* ------------------------------------------------------------------ */
-
-function UpdatePanel() {
-  const { state, lastCheckedAt, currentVersion, checking, check, download, install } =
-    useUpdateStatus();
-
-  const relativeTime = (ts: number | null): string => {
-    if (!ts) return 'Never';
-    const diff = Date.now() - ts;
-    const mins = Math.floor(diff / 60_000);
-    if (mins < 1) return 'just now';
-    if (mins < 60) return `${mins} min ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        <div>
-          <p className="text-muted mb-1">Current version</p>
-          <p className="font-mono text-text-primary">{currentVersion || '—'}</p>
-        </div>
-        <div>
-          <p className="text-muted mb-1">Last checked</p>
-          <p className="font-mono text-text-primary">{relativeTime(lastCheckedAt)}</p>
-        </div>
-      </div>
-
-      <div className="border border-border bg-surface p-3">
-        {state.status === 'idle' && (
-          <div className="flex items-center gap-2 text-xs text-text-secondary">
-            <CheckIcon2 className="h-3.5 w-3.5 text-muted" />
-            <span>Ready to check for updates.</span>
-          </div>
-        )}
-
-        {state.status === 'checking' && (
-          <div className="flex items-center gap-2 text-xs text-text-secondary">
-            <LoaderIcon className="h-3.5 w-3.5 animate-spin text-accent" />
-            <span>Checking for updates…</span>
-          </div>
-        )}
-
-        {state.status === 'not-available' && (
-          <div className="flex items-center gap-2 text-xs text-text-secondary">
-            <CheckIcon2 className="h-3.5 w-3.5 text-accent" />
-            <span>You&apos;re on the latest version.</span>
-          </div>
-        )}
-
-        {state.status === 'available' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-text-primary">
-              <DownloadIcon className="h-3.5 w-3.5 text-accent" />
-              <span>Version {state.version} is available.</span>
-            </div>
-            <button onClick={download} className="btn-primary text-[10px]">
-              <DownloadIcon className="h-3 w-3" />
-              Download update
-            </button>
-          </div>
-        )}
-
-        {state.status === 'downloading' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-text-secondary">
-              <LoaderIcon className="h-3.5 w-3.5 animate-spin text-accent" />
-              <span>Downloading… {state.percent}%</span>
-            </div>
-            <div className="h-1 w-full overflow-hidden bg-surface-2">
-              <div
-                className="h-full bg-accent transition-all duration-200"
-                style={{ width: `${state.percent}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        {state.status === 'ready' && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-xs text-text-primary">
-              <DownloadIcon className="h-3.5 w-3.5 text-accent" />
-              <span>Update {state.version} downloaded. Ready to install.</span>
-            </div>
-            <button onClick={install} className="btn-primary text-[10px]">
-              <RotateCw className="h-3 w-3" />
-              Restart & install
-            </button>
-          </div>
-        )}
-
-        {state.status === 'error' && (
-          <div className="space-y-2">
-            <p className="text-xs text-text-secondary">
-              Update check failed: <span className="text-text-primary">{state.message}</span>
-            </p>
-          </div>
-        )}
-      </div>
-
-      {(state.status === 'idle' || state.status === 'not-available' || state.status === 'error') && (
-        <button
-          onClick={check}
-          disabled={checking}
-          className="btn-ghost text-[10px]"
-        >
-          {checking ? <LoaderIcon className="h-3 w-3 animate-spin" /> : null}
-          Check for updates
-        </button>
-      )}
-    </div>
   );
 }

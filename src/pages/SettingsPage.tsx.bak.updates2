@@ -78,13 +78,6 @@ export function SettingsPage() {
 
       <div className="divider" />
 
-      {/* Updates */}
-      <Section title="Updates">
-        <UpdatePanel />
-      </Section>
-
-      <div className="divider" />
-
       {/* Engine status */}
       <Section title="Engine Status">
         <div className="space-y-2">

@@ -323,8 +323,6 @@ export const IPC = {
   UPDATE_STATUS: 'update:status', // main -> renderer push
   UPDATE_CHECK: 'update:check',
   UPDATE_INSTALL: 'update:install',
-  UPDATE_DOWNLOAD: 'update:download',
-  UPDATE_STATE_GET: 'update:stateGet',
   // window controls
   WINDOW_MINIMIZE: 'window:minimize',
   WINDOW_MAXIMIZE: 'window:maximize',

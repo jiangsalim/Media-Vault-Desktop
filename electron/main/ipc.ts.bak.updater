@@ -2,7 +2,7 @@
  * Central IPC registration. Every handler is wrapped so exceptions become a
  * typed IpcResult<T> instead of crashing the renderer bridge.
  */
-import { ipcMain, dialog, shell, clipboard, BrowserWindow, app } from 'electron';
+import { ipcMain, dialog, shell, clipboard, BrowserWindow } from 'electron';
 import {
   IPC,
   type IpcResult,
@@ -21,7 +21,7 @@ import {
   clearCompleted,
 } from '../db/database';
 import { classifyYouTubeUrl, extractYouTubeUrl } from '../utils/validation';
-import { checkForUpdates, downloadUpdate, quitAndInstall, getLastUpdateState } from '../services/updater';
+import { checkForUpdates, quitAndInstall } from '../services/updater';
 import { createLogger } from '../utils/logger';
 
 const log = createLogger('ipc');
@@ -165,15 +165,8 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC.STATS_GET, safe(async () => getStatistics()));
 
   /* ------------------------------- updater ---------------------------- */
-  ipcMain.handle('app:getVersion', safe(async () => app.getVersion()));
   ipcMain.handle(IPC.UPDATE_CHECK, safe(async () => { checkForUpdates(); return true; }));
   ipcMain.handle(IPC.UPDATE_INSTALL, safe(async () => { quitAndInstall(); return true; }));
-  ipcMain.handle(IPC.UPDATE_DOWNLOAD, safe(async () => {
-    downloadUpdate();
-    return true;
-  }));
-
-  ipcMain.handle(IPC.UPDATE_STATE_GET, safe(async () => getLastUpdateState()));
 
   /* --------------------------- window controls ------------------------ */
   ipcMain.on(IPC.WINDOW_MINIMIZE, () => getWindow()?.minimize());

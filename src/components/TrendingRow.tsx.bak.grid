@@ -1,5 +1,5 @@
-﻿/** Trending YouTube grid (4 cols desktop, 2 cols mobile). */
-import { useEffect, useState } from 'react';
+﻿/** Horizontal scroll of trending YouTube videos (region auto-detected). */
+import { useEffect, useRef, useState } from 'react';
 import { Play, RefreshCw } from 'lucide-react';
 import { useAnalyze } from '@/hooks/useAnalyze';
 import { Skeleton } from '@/components/Skeleton';
@@ -7,13 +7,14 @@ import type { TrendingResponse, VideoSearchResult } from '@shared/types';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
-const CARDS_SHOWN = 8;
+const TRENDING_SHOWN = 12;
 
 export function TrendingRow() {
   const [data, setData] = useState<TrendingResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const analyze = useAnalyze();
 
   const load = async (force = false) => {
@@ -41,12 +42,12 @@ export function TrendingRow() {
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-baseline gap-3">
           <h2 className="text-[11px] font-semibold uppercase tracking-widest text-text-primary">
-            Trending
+            Trending{data?.region ? ` in ${data.region}` : ''}
           </h2>
           {data?.cached && (
             <span className="font-mono text-[10px] uppercase tracking-widest text-muted">
@@ -67,9 +68,9 @@ export function TrendingRow() {
 
       {/* Content */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-video w-full" />
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-32 w-52 shrink-0" />
           ))}
         </div>
       ) : error ? (
@@ -84,8 +85,12 @@ export function TrendingRow() {
           No trending videos available right now.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {data.items.slice(0, CARDS_SHOWN).map((item) => (
+        <div
+          ref={scrollRef}
+          className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1"
+          style={{ scrollbarWidth: 'thin' }}
+        >
+          {data.items.slice(0, TRENDING_SHOWN).map((item) => (
             <TrendingCard key={item.id} item={item} onSelect={onSelect} />
           ))}
         </div>
@@ -105,7 +110,7 @@ function TrendingCard({
     <button
       onClick={() => onSelect(item)}
       className={cn(
-        'group flex flex-col gap-2 text-left',
+        'group flex w-52 shrink-0 flex-col gap-2 text-left',
         'transition-transform duration-150 hover:-translate-y-0.5',
       )}
       aria-label={`Trending: ${item.title}`}
@@ -119,6 +124,7 @@ function TrendingCard({
             loading="lazy"
           />
         ) : null}
+        {/* Play overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
           <Play className="h-6 w-6 fill-white text-white opacity-0 transition-opacity group-hover:opacity-100" />
         </div>
