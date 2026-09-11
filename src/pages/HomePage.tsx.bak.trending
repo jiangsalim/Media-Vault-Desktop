@@ -1,4 +1,4 @@
-﻿import { Download, Film, Music, HardDrive, } from 'lucide-react';
+import { Download, Film, Music, HardDrive, } from 'lucide-react';
 import { UrlInput } from '@/components/UrlInput';
 import { StatCard } from '@/components/StatCard';
 import { DownloadCard } from '@/components/DownloadCard';
@@ -7,7 +7,6 @@ import { EmptyState, ASCII } from '@/components/EmptyState';
 import { useDownloadStore } from '@/store/useDownloadStore';
 import { useUiStore } from '@/store/useUiStore';
 import { formatBytes } from '@/lib/format';
-import { TrendingRow } from '@/components/TrendingRow';
 
 export function HomePage() {
   const stats = useDownloadStore((s) => s.stats);
@@ -30,8 +29,6 @@ export function HomePage() {
       <DependencyWarning />
 
       <UrlInput />
-
-      <TrendingRow />
 
       {/* Dashboard stats */}
       <div className="divider" />

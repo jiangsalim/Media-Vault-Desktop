@@ -1,0 +1,342 @@
+/**
+ * yt-dlp integration: media analysis (metadata extraction). Download execution
+ * lives in download-manager.ts; this module is purely about parsing the rich
+ * `--dump-single-json` output into our typed VideoInfo / PlaylistInfo shapes.
+ */
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import type {
+  VideoInfo,
+  VideoFormat,
+  ThumbnailInfo,
+  SubtitleTrack,
+  AudioTrackInfo,
+  PlaylistInfo,
+  PlaylistEntry,
+  VideoSearchResult,
+} from '../../shared/types';
+import { resolveBinary } from '../utils/binaries';
+import { readSettings } from './settings';
+import { createLogger } from '../utils/logger';
+import { humanizeError } from '../utils/errors';
+
+const execFileAsync = promisify(execFile);
+const log = createLogger('ytdlp');
+
+/* ------------------------------ raw shapes ------------------------------- */
+/* Subset of the very large yt-dlp JSON we actually consume. */
+interface RawFormat {
+  format_id: string;
+  ext: string;
+  height?: number;
+  width?: number;
+  fps?: number;
+  filesize?: number;
+  filesize_approx?: number;
+  vcodec?: string;
+  acodec?: string;
+  tbr?: number;
+  format_note?: string;
+  resolution?: string;
+}
+interface RawThumb {
+  id?: string;
+  url: string;
+  width?: number;
+  height?: number;
+  preference?: number;
+}
+interface RawSub {
+  ext: string;
+  url: string;
+  name?: string;
+}
+interface RawInfo {
+  id: string;
+  webpage_url?: string;
+  original_url?: string;
+  title: string;
+  description?: string;
+  channel?: string;
+  channel_id?: string;
+  channel_url?: string;
+  uploader?: string;
+  channel_follower_count?: number;
+  upload_date?: string;
+  duration?: number;
+  duration_string?: string;
+  view_count?: number;
+  like_count?: number;
+  comment_count?: number;
+  categories?: string[];
+  tags?: string[];
+  language?: string;
+  is_live?: boolean;
+  age_limit?: number;
+  thumbnails?: RawThumb[];
+  formats?: RawFormat[];
+  subtitles?: Record<string, RawSub[]>;
+  automatic_captions?: Record<string, RawSub[]>;
+  _type?: string;
+  entries?: RawInfo[];
+  playlist_count?: number;
+}
+
+/* ------------------------------ utilities -------------------------------- */
+
+function binArgsBase(): { bin: string; common: string[] } {
+  const s = readSettings();
+  const bin = resolveBinary('yt-dlp', s.ytDlpPath);
+  const common = [
+    '--no-warnings',
+    '--no-playlist', // overridden explicitly for playlist calls
+    '--no-call-home',
+  ];
+  return { bin, common };
+}
+
+/** Convert a yt-dlp date (YYYYMMDD) into ISO yyyy-mm-dd. */
+function normaliseDate(d?: string): string | null {
+  if (!d || d.length !== 8) return null;
+  return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+}
+
+function labelForThumb(t: RawThumb): string {
+  const h = t.height ?? 0;
+  if (h >= 1080) return 'Original';
+  if (h >= 720) return 'Max Resolution';
+  if (h >= 360) return 'High';
+  if (h >= 180) return 'Medium';
+  return 'Default';
+}
+
+function mapThumbnails(raw: RawThumb[] = []): ThumbnailInfo[] {
+  return raw
+    .filter((t) => !!t.url)
+    .map((t, i) => ({
+      id: t.id ?? String(i),
+      url: t.url,
+      width: t.width ?? null,
+      height: t.height ?? null,
+      label: labelForThumb(t),
+    }))
+    .sort((a, b) => (a.height ?? 0) - (b.height ?? 0));
+}
+
+function mapFormats(raw: RawFormat[] = []): VideoFormat[] {
+  return raw
+    .filter((f) => f.format_id)
+    .map((f) => {
+      const videoOnly = (f.vcodec ?? 'none') !== 'none' && (f.acodec ?? 'none') === 'none';
+      const audioOnly = (f.vcodec ?? 'none') === 'none' && (f.acodec ?? 'none') !== 'none';
+      return {
+        formatId: f.format_id,
+        ext: f.ext,
+        resolution: f.resolution ?? (f.height ? `${f.height}p` : 'audio'),
+        height: f.height ?? null,
+        width: f.width ?? null,
+        fps: f.fps ?? null,
+        filesize: f.filesize ?? f.filesize_approx ?? null,
+        vcodec: f.vcodec ?? null,
+        acodec: f.acodec ?? null,
+        tbr: f.tbr ?? null,
+        videoOnly,
+        audioOnly,
+        note: f.format_note ?? null,
+      } satisfies VideoFormat;
+    });
+}
+
+function mapSubtitles(
+  subs: Record<string, RawSub[]> = {},
+  auto: boolean,
+): SubtitleTrack[] {
+  const out: SubtitleTrack[] = [];
+  for (const [lang, tracks] of Object.entries(subs)) {
+    const first = tracks[0];
+    if (!first) continue;
+    out.push({
+      lang,
+      langName: first.name ?? lang,
+      ext: first.ext,
+      url: first.url,
+      auto,
+    });
+  }
+  return out;
+}
+
+function mapAudioTracks(raw: RawFormat[] = []): AudioTrackInfo[] {
+  const seen = new Set<string>();
+  const tracks: AudioTrackInfo[] = [];
+  for (const f of raw) {
+    if ((f.acodec ?? 'none') === 'none') continue;
+    if ((f.vcodec ?? 'none') !== 'none') continue;
+    const key = f.format_note ?? f.format_id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    tracks.push({ id: f.format_id, lang: null, note: f.format_note ?? null });
+  }
+  return tracks;
+}
+
+function toVideoInfo(raw: RawInfo): VideoInfo {
+  const subs = mapSubtitles(raw.subtitles, false);
+  const autoSubs = mapSubtitles(raw.automatic_captions, true);
+  return {
+    id: raw.id,
+    url: raw.webpage_url ?? raw.original_url ?? '',
+    title: raw.title,
+    description: raw.description ?? null,
+    channel: raw.channel ?? raw.uploader ?? null,
+    channelId: raw.channel_id ?? null,
+    channelUrl: raw.channel_url ?? null,
+    uploader: raw.uploader ?? null,
+    subscriberCount: raw.channel_follower_count ?? null,
+    uploadDate: normaliseDate(raw.upload_date),
+    duration: raw.duration ?? null,
+    durationString: raw.duration_string ?? null,
+    viewCount: raw.view_count ?? null,
+    likeCount: raw.like_count ?? null,
+    commentCount: raw.comment_count ?? null,
+    category: raw.categories?.[0] ?? null,
+    tags: raw.tags ?? [],
+    language: raw.language ?? null,
+    isLive: raw.is_live ?? false,
+    ageLimit: raw.age_limit ?? 0,
+    thumbnails: mapThumbnails(raw.thumbnails),
+    formats: mapFormats(raw.formats),
+    subtitles: [...subs, ...autoSubs],
+    audioTracks: mapAudioTracks(raw.formats),
+  };
+}
+
+/* ------------------------------- public API ------------------------------ */
+
+export async function analyzeUrl(url: string): Promise<VideoInfo> {
+  const { bin } = binArgsBase();
+  const args = [
+    '--dump-single-json',
+    '--no-warnings',
+    '--no-playlist',
+    url,
+  ];
+  log.info('analyze', url);
+  try {
+    const { stdout } = await execFileAsync(bin, args, {
+      maxBuffer: 1024 * 1024 * 64,
+      timeout: 60_000,
+    });
+    const raw = JSON.parse(stdout) as RawInfo;
+    return toVideoInfo(raw);
+  } catch (err) {
+    // execFile errors expose stderr; map it to a friendly message.
+    const stderr = (err as { stderr?: string }).stderr ?? (err as Error).message;
+    throw new Error(humanizeError(stderr));
+  }
+}
+
+export async function analyzePlaylist(url: string): Promise<PlaylistInfo> {
+  const { bin } = binArgsBase();
+  // Flat playlist extraction is fast — we only need lightweight entry info.
+  const args = [
+    '--dump-single-json',
+    '--flat-playlist',
+    '--no-warnings',
+    '--yes-playlist',
+    url,
+  ];
+  log.info('analyze playlist', url);
+  let raw: RawInfo;
+  try {
+    const { stdout } = await execFileAsync(bin, args, {
+      maxBuffer: 1024 * 1024 * 128,
+      timeout: 120_000,
+    });
+    raw = JSON.parse(stdout) as RawInfo;
+  } catch (err) {
+    const stderr = (err as { stderr?: string }).stderr ?? (err as Error).message;
+    throw new Error(humanizeError(stderr));
+  }
+
+  const entries: PlaylistEntry[] = (raw.entries ?? []).map((e) => ({
+    id: e.id,
+    url: e.webpage_url ?? `https://www.youtube.com/watch?v=${e.id}`,
+    title: e.title,
+    duration: e.duration ?? null,
+    durationString: e.duration_string ?? null,
+    thumbnail: e.thumbnails?.[0]?.url ?? null,
+    uploader: e.uploader ?? e.channel ?? null,
+  }));
+
+  // Prefer the playlist's own thumbnail, falling back to the first entry's.
+  const playlistThumb =
+    raw.thumbnails?.at(-1)?.url ?? entries.find((e) => e.thumbnail)?.thumbnail ?? null;
+
+  return {
+    id: raw.id,
+    title: raw.title,
+    uploader: raw.uploader ?? raw.channel ?? null,
+    thumbnail: playlistThumb,
+    entryCount: raw.playlist_count ?? entries.length,
+    entries,
+  };
+}
+
+/**
+ * Fast YouTube search via yt-dlp's `ytsearch` extractor with --flat-playlist.
+ * Returns lightweight results (id, title, channel, duration, thumbnail) without
+ * per-video format metadata. Users click a result → the normal analyzeUrl()
+ * pipeline runs on that URL to fetch full details.
+ */
+export async function searchYoutube(
+  query: string,
+  count = 10,
+): Promise<VideoSearchResult[]> {
+  const trimmed = query.trim();
+  if (!trimmed) throw new Error('Search query is empty');
+
+  // Cap between 1 and 50 to prevent abuse and runaway requests.
+  const n = Math.max(1, Math.min(50, Math.floor(count)));
+  const { bin } = binArgsBase();
+  const args = [
+    '--dump-single-json',
+    '--flat-playlist',
+    '--no-warnings',
+    `ytsearch${n}:${trimmed}`,
+  ];
+
+  log.info('search', `ytsearch${n}: ${trimmed}`);
+
+  try {
+    const { stdout } = await execFileAsync(bin, args, {
+      maxBuffer: 1024 * 1024 * 64,
+      timeout: 45_000,
+    });
+    const raw = JSON.parse(stdout) as RawInfo;
+    const entries = raw.entries ?? [];
+
+    return entries.map((e) => {
+      // Flat-playlist entries often lack thumbnails; derive from id when possible.
+      const thumb =
+        e.thumbnails?.at(-1)?.url ??
+        (e.id ? `https://i.ytimg.com/vi/${e.id}/mqdefault.jpg` : null);
+
+      return {
+        id: e.id,
+        url: e.webpage_url ?? `https://www.youtube.com/watch?v=${e.id}`,
+        title: e.title ?? '(untitled)',
+        channel: e.channel ?? e.uploader ?? null,
+        duration: e.duration ?? null,
+        durationString: e.duration_string ?? null,
+        thumbnail: thumb,
+        viewCount: e.view_count ?? null,
+        uploadDate: normaliseDate(e.upload_date),
+      } satisfies VideoSearchResult;
+    });
+  } catch (err) {
+    const stderr =
+      (err as { stderr?: string }).stderr ?? (err as Error).message;
+    throw new Error(humanizeError(stderr));
+  }
+}

@@ -115,20 +115,6 @@ export interface VideoSearchResult {
   uploadDate: string | null; // ISO yyyy-mm-dd
 }
 
-/* -------------------------------------------------------------------------- */
-/*                          Trending (YouTube feed)                           */
-/* -------------------------------------------------------------------------- */
-
-export interface TrendingResponse {
-  /** ISO 3166-1 alpha-2 country code detected / used, e.g. "UG", "US" */
-  region: string;
-  /** Unix ms when the data was fetched */
-  fetchedAt: number;
-  /** Whether this result came from the in-memory cache */
-  cached: boolean;
-  items: VideoSearchResult[];
-}
-
 
 /* -------------------------------------------------------------------------- */
 /*                              Download requests                              */
@@ -294,8 +280,6 @@ export const IPC = {
   ANALYZE_URL: 'media:analyze',
   ANALYZE_PLAYLIST: 'media:analyzePlaylist',
   SEARCH_YT: 'media:searchYt',
-  TRENDING_GET: 'media:trendingGet',
-  SUGGEST_GET: 'media:suggestGet',
   // downloads
   DOWNLOAD_START: 'download:start',
   DOWNLOAD_CHECK_DUPLICATE: 'download:checkDuplicate',

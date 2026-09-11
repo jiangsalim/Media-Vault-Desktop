@@ -1,0 +1,142 @@
+﻿/**
+ * Trending service — fetches YouTube's trending feed via yt-dlp.
+ *
+ * Region is auto-detected from the OS locale (Electron app.getLocale()).
+ * Uses yt-dlp's --geo-bypass-country to get local trending content, with
+ * a per-session in-memory cache (10 min TTL) to avoid hammering YouTube.
+ */
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { app } from 'electron';
+import type { TrendingResponse, VideoSearchResult } from '../../shared/types';
+import { resolveBinary } from '../utils/binaries';
+import { readSettings } from './settings';
+import { createLogger } from '../utils/logger';
+import { humanizeError } from '../utils/errors';
+
+const execFileAsync = promisify(execFile);
+const log = createLogger('trending');
+
+/** How many trending items to fetch */
+const TRENDING_COUNT = 20;
+/** Cache TTL (10 minutes) */
+const CACHE_TTL_MS = 10 * 60 * 1000;
+
+interface RawTrendingEntry {
+  id: string;
+  webpage_url?: string;
+  title: string;
+  channel?: string;
+  uploader?: string;
+  duration?: number;
+  duration_string?: string;
+  view_count?: number;
+  upload_date?: string;
+  thumbnails?: { url: string; height?: number }[];
+}
+
+interface RawTrendingResponse {
+  entries?: RawTrendingEntry[];
+}
+
+/* --------------------------- region detection ---------------------------- */
+
+/**
+ * Map an Electron locale (e.g. "en-UG", "en_US", "sw-KE") to an ISO country
+ * code. Falls back to "US" if nothing useful is found.
+ */
+function detectRegion(): string {
+  try {
+    const locale = app.getLocale(); // e.g. "en-UG"
+    const parts = locale.split(/[-_]/);
+    if (parts.length >= 2) {
+      const country = parts[1].toUpperCase();
+      if (/^[A-Z]{2}$/.test(country)) {
+        log.info('detected region', country, 'from locale', locale);
+        return country;
+      }
+    }
+  } catch (err) {
+    log.warn('region detection failed', String(err));
+  }
+  log.info('falling back to region US');
+  return 'US';
+}
+
+/* -------------------------------- cache ---------------------------------- */
+
+interface CacheEntry {
+  response: TrendingResponse;
+  at: number;
+}
+
+let cache: CacheEntry | null = null;
+
+/* --------------------------------- fetch --------------------------------- */
+
+function normaliseDate(d?: string): string | null {
+  if (!d || d.length !== 8) return null;
+  return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`;
+}
+
+export async function getTrending(forceRefresh = false): Promise<TrendingResponse> {
+  // Return cached if fresh
+  if (!forceRefresh && cache && Date.now() - cache.at < CACHE_TTL_MS) {
+    return { ...cache.response, cached: true };
+  }
+
+  const settings = readSettings();
+  const bin = resolveBinary('yt-dlp', settings.ytDlpPath);
+  const region = detectRegion();
+
+  const args = [
+    '--dump-single-json',
+    '--flat-playlist',
+    '--no-warnings',
+    '--playlist-end', String(TRENDING_COUNT),
+    '--geo-bypass-country', region,
+    'https://www.youtube.com/feed/trending',
+  ];
+
+  log.info('fetching trending', `region=${region}`);
+
+  try {
+    const { stdout } = await execFileAsync(bin, args, {
+      maxBuffer: 1024 * 1024 * 64,
+      timeout: 45_000,
+    });
+    const raw = JSON.parse(stdout) as RawTrendingResponse;
+    const entries = raw.entries ?? [];
+
+    const items: VideoSearchResult[] = entries.map((e) => {
+      const thumb =
+        e.thumbnails?.at(-1)?.url ??
+        (e.id ? `https://i.ytimg.com/vi/${e.id}/mqdefault.jpg` : null);
+
+      return {
+        id: e.id,
+        url: e.webpage_url ?? `https://www.youtube.com/watch?v=${e.id}`,
+        title: e.title ?? '(untitled)',
+        channel: e.channel ?? e.uploader ?? null,
+        duration: e.duration ?? null,
+        durationString: e.duration_string ?? null,
+        thumbnail: thumb,
+        viewCount: e.view_count ?? null,
+        uploadDate: normaliseDate(e.upload_date),
+      };
+    });
+
+    const response: TrendingResponse = {
+      region,
+      fetchedAt: Date.now(),
+      cached: false,
+      items,
+    };
+
+    cache = { response, at: Date.now() };
+    return response;
+  } catch (err) {
+    const stderr = (err as { stderr?: string }).stderr ?? (err as Error).message;
+    throw new Error(humanizeError(stderr));
+  }
+}

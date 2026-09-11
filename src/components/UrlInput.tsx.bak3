@@ -116,7 +116,7 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
         className={cn(
-          'relative border-b transition-colors duration-150',
+          'border-b transition-colors duration-150',
           dragging ? 'border-text-primary' : url && !looksLikeUrl ? 'border-text-secondary' : 'border-border',
           'focus-within:border-text-primary',
         )}
@@ -160,17 +160,6 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
             )}
           </button>
         </div>
-
-        {/* Suggestions dropdown — only when the input is not a URL */}
-        {!looksLikeUrl && (
-          <SearchSuggestions
-            suggestions={suggestions}
-            activeIndex={activeIndex}
-            onSelect={runSearchQuery}
-            onHover={setActiveIndex}
-            visible={focused}
-          />
-        )}
       </div>
 
       {url && !looksLikeUrl && (

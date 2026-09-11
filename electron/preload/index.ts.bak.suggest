@@ -32,8 +32,6 @@ const api = {
     invoke<VideoSearchResult[]>(IPC.SEARCH_YT, query, count ?? 10),
   getTrending: (forceRefresh = false) =>
     invoke<TrendingResponse>(IPC.TRENDING_GET, forceRefresh),
-  getSuggestions: (query: string, limit = 8) =>
-    invoke<string[]>(IPC.SUGGEST_GET, query, limit),
 
   /* downloads */
   startDownload: (req: DownloadRequest) => invoke<DownloadItem>(IPC.DOWNLOAD_START, req),

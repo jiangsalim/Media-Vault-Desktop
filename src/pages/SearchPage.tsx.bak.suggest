@@ -6,8 +6,6 @@ import { SearchResultRow } from '@/components/SearchResultRow';
 import { SearchFilters } from '@/components/SearchFilters';
 import { Skeleton } from '@/components/Skeleton';
 import { useAnalyze } from '@/hooks/useAnalyze';
-import { useSuggestions } from '@/hooks/useSuggestions';
-import { SearchSuggestions } from '@/components/SearchSuggestions';
 import type { VideoSearchResult } from '@shared/types';
 
 export function SearchPage() {
@@ -24,9 +22,6 @@ export function SearchPage() {
 
   const analyze = useAnalyze();
   const [input, setInput] = useState(query);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [focused, setFocused] = useState(false);
-  const { suggestions } = useSuggestions(input, focused);
   const inputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -54,38 +49,9 @@ export function SearchPage() {
     return () => obs.disconnect();
   }, [loadMore]);
 
-  const runQuery = (q: string) => {
-    setInput(q);
-    setActiveIndex(-1);
-    if (q.trim()) search(q);
-  };
-
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    // If a suggestion is highlighted, use it
-    if (activeIndex >= 0 && suggestions[activeIndex]) {
-      runQuery(suggestions[activeIndex]);
-      return;
-    }
     if (input.trim()) search(input);
-  };
-
-  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex((i) => Math.max(i - 1, -1));
-    } else if (e.key === 'Escape') {
-      setActiveIndex(-1);
-      (e.target as HTMLInputElement).blur();
-    } else if (e.key === 'Enter') {
-      if (activeIndex >= 0 && suggestions[activeIndex]) {
-        e.preventDefault();
-        runQuery(suggestions[activeIndex]);
-      }
-    }
   };
 
   const onSelect = (result: VideoSearchResult) => {
@@ -143,50 +109,33 @@ export function SearchPage() {
 
       {/* Search bar */}
       <form onSubmit={submit} className="mb-3">
-        <div className="relative">
-          <div className="flex items-center gap-2 border border-border bg-surface px-3 py-2 focus-within:border-accent">
-            <Search className="h-3.5 w-3.5 text-muted" />
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value);
-                setActiveIndex(-1);
-              }}
-              onKeyDown={onKeyDown}
-              onFocus={() => setFocused(true)}
-              onBlur={() => setTimeout(() => setFocused(false), 120)}
-              placeholder="Search YouTube..."
-              className="flex-1 bg-transparent font-mono text-sm text-text-primary outline-none placeholder:text-muted"
-              spellCheck={false}
-              autoComplete="off"
-            />
-            {input && (
-              <button
-                type="button"
-                onClick={() => setInput('')}
-                className="btn-icon"
-                aria-label="Clear"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-            <button
-              type="submit"
-              disabled={!input.trim() || loading}
-              className="btn-primary"
-            >
-              {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Search'}
-            </button>
-          </div>
-
-          <SearchSuggestions
-            suggestions={suggestions}
-            activeIndex={activeIndex}
-            onSelect={runQuery}
-            onHover={setActiveIndex}
-            visible={focused}
+        <div className="flex items-center gap-2 border border-border bg-surface px-3 py-2 focus-within:border-accent">
+          <Search className="h-3.5 w-3.5 text-muted" />
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Search YouTube..."
+            className="flex-1 bg-transparent font-mono text-sm text-text-primary outline-none placeholder:text-muted"
+            spellCheck={false}
           />
+          {input && (
+            <button
+              type="button"
+              onClick={() => setInput('')}
+              className="btn-icon"
+              aria-label="Clear"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!input.trim() || loading}
+            className="btn-primary"
+          >
+            {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Search'}
+          </button>
         </div>
       </form>
 

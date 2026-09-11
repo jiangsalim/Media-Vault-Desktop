@@ -295,7 +295,6 @@ export const IPC = {
   ANALYZE_PLAYLIST: 'media:analyzePlaylist',
   SEARCH_YT: 'media:searchYt',
   TRENDING_GET: 'media:trendingGet',
-  SUGGEST_GET: 'media:suggestGet',
   // downloads
   DOWNLOAD_START: 'download:start',
   DOWNLOAD_CHECK_DUPLICATE: 'download:checkDuplicate',

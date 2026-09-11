@@ -10,8 +10,6 @@ import {
   type AppSettings,
 } from '../../shared/types';
 import { analyzeUrl, analyzePlaylist, searchYoutube } from '../services/ytdlp';
-import { getTrending } from '../services/trending';
-import { getSuggestions } from '../services/suggest';
 import { downloadManager } from '../services/download-manager';
 import { checkDependencies } from '../services/dependencies';
 import { readSettings, writeSettings } from '../services/settings';
@@ -66,18 +64,6 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     IPC.SEARCH_YT,
     safe(async (_e, query: string, count?: number) => {
       return searchYoutube(query, count ?? 10);
-    }),
-  );
-  ipcMain.handle(
-    IPC.TRENDING_GET,
-    safe(async (_e, forceRefresh?: boolean) => {
-      return getTrending(forceRefresh ?? false);
-    }),
-  );
-  ipcMain.handle(
-    IPC.SUGGEST_GET,
-    safe(async (_e, query: string, limit?: number) => {
-      return getSuggestions(query, limit ?? 8);
     }),
   );
   /* ----------------------------- downloads ---------------------------- */

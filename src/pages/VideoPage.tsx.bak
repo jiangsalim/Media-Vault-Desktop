@@ -1,5 +1,4 @@
-﻿import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import { UrlInput } from '@/components/UrlInput';
 import { QualityPanel } from '@/components/video/QualityPanel';
 import { AudioPanel } from '@/components/video/AudioPanel';
@@ -24,7 +23,6 @@ export function VideoPage() {
   const video = useUiStore((s) => s.currentVideo);
   const analyzing = useUiStore((s) => s.analyzing);
   const [tab, setTab] = useState<Tab>('video');
-  const [showPlayer, setShowPlayer] = useState(true);
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -35,39 +33,6 @@ export function VideoPage() {
 
       <div className="divider" />
       <UrlInput autoFocus={false} />
-
-      {/* Embedded YouTube player — replaces the static thumbnail */}
-      {video && (
-        <div className="space-y-2">
-          {showPlayer ? (
-            <div className="relative">
-              <iframe
-                src={`https://www.youtube.com/embed/${video.id}?autoplay=1&mute=1&rel=0`}
-                className="aspect-video w-full border border-border bg-black"
-                title={video.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-              />
-              <button
-                onClick={() => setShowPlayer(false)}
-                className="absolute right-2 top-2 flex items-center gap-1 border border-border bg-black/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-white hover:bg-black"
-                title="Hide video"
-              >
-                <EyeOff className="h-3 w-3" />
-                Hide
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowPlayer(true)}
-              className="flex w-full items-center justify-center gap-2 border border-border bg-surface py-3 text-[10px] font-semibold uppercase tracking-widest text-text-secondary hover:bg-hover hover:text-text-primary"
-            >
-              <Eye className="h-3.5 w-3.5" />
-              Show video
-            </button>
-          )}
-        </div>
-      )}
 
       {analyzing && !video ? (
         <VideoSkeleton />
