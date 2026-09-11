@@ -1,0 +1,13 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy Background -->
+  <rect width="40" height="40" rx="10" fill="#0A1F3F"/>
+  
+  <!-- M Letter -->
+  <path d="M8 28V12L16 22L16 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Play Triangle (Teal) -->
+  <polygon points="20,14 20,26 28,20" fill="#00C2BA"/>
+  
+  <!-- V Letter -->
+  <path d="M30 12L34 28L38 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

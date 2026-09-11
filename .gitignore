@@ -61,3 +61,7 @@ resources/bin/*/ffmpeg*
 
 *.tmp
 *.cache
+
+# Large binary files (downloaded via npm run fetch-binaries)
+resources/bin/*/
+!resources/bin/*/.gitkeep
