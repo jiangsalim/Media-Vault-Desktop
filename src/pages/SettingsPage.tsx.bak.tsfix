@@ -38,6 +38,7 @@ export function SettingsPage() {
   const refreshDeps = useSettingsStore((s) => s.refreshDeps);
   const toast = useUiStore((s) => s.toast);
   const [checking, setChecking] = useState(false);
+  const updater = useUpdateStatus();
 
   if (!settings) return null;
 

@@ -14,6 +14,7 @@ import type { VideoSearchResult } from '@shared/types';
 
 export function SearchPage() {
   const query = useSearchStore((s) => s.query);
+  const setQuery = useSearchStore((s) => s.setQuery);
   const search = useSearchStore((s) => s.search);
   const loadMore = useSearchStore((s) => s.loadMore);
   const results = useSearchStore((s) => s.results);

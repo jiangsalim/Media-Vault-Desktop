@@ -10,6 +10,7 @@ import type { TrendingResponse, VideoSearchResult } from '../../shared/types';
 import { resolveBinary } from '../utils/binaries';
 import { readSettings } from './settings';
 import { createLogger } from '../utils/logger';
+import { humanizeError } from '../utils/errors';
 
 const execFileAsync = promisify(execFile);
 const log = createLogger('trending');
@@ -67,9 +68,8 @@ function detectRegion(): string {
   try {
     const locale = app.getLocale();
     const parts = locale.split(/[-_]/);
-    const second = parts[1];
-    if (parts.length >= 2 && second) {
-      const country = second.toUpperCase();
+    if (parts.length >= 2) {
+      const country = parts[1].toUpperCase();
       if (/^[A-Z]{2}$/.test(country)) return country;
     }
   } catch {
@@ -144,9 +144,7 @@ function shuffle<T>(arr: T[]): T[] {
   const copy = [...arr];
   for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    const tmp = copy[i] as T;
-    copy[i] = copy[j] as T;
-    copy[j] = tmp;
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
   return copy;
 }

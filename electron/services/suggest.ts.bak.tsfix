@@ -25,9 +25,8 @@ function detectHl(): string {
 function detectGl(): string {
   try {
     const parts = app.getLocale().split(/[-_]/);
-    const second = parts[1];
-    if (parts.length >= 2 && second && /^[A-Za-z]{2}$/.test(second)) {
-      return second.toUpperCase();
+    if (parts.length >= 2 && /^[A-Za-z]{2}$/.test(parts[1])) {
+      return parts[1].toUpperCase();
     }
   } catch {
     // ignore
