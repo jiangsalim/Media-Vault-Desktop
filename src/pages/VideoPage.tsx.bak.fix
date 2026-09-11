@@ -29,8 +29,7 @@ export function VideoPage() {
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
-      <BackToBar />
-      <h1 className="section-title">Video</h1>
+      <BackToBar />`n      <BackToBar />`n      <BackToBar />`n      <h1 className="section-title">Video</h1>
       <p className="text-xs text-text-secondary">
         Analyze, configure quality, and download.
       </p>

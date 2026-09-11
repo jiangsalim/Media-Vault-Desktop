@@ -141,7 +141,6 @@ export function SearchPage() {
   return (
     <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
       <BackToBar />
-      <h1 className="section-title">Search</h1>
       <p className="text-xs text-text-secondary mb-4">
         Find videos on YouTube and pick one to download.
       </p>
