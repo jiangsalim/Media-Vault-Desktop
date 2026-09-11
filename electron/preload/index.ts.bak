@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Preload script — the ONLY bridge between the sandboxed renderer and the main
  * process. We expose a typed, minimal API surface via contextBridge. The
  * renderer can never reach `ipcRenderer` or node directly.
@@ -28,8 +28,6 @@ const api = {
   /* analysis */
   analyzeUrl: (url: string) => invoke<VideoInfo>(IPC.ANALYZE_URL, url),
   analyzePlaylist: (url: string) => invoke<PlaylistInfo>(IPC.ANALYZE_PLAYLIST, url),
-  searchYoutube: (query: string, count?: number) =>
-    invoke<VideoSearchResult[]>(IPC.SEARCH_YT, query, count ?? 10),
 
   /* downloads */
   startDownload: (req: DownloadRequest) => invoke<DownloadItem>(IPC.DOWNLOAD_START, req),

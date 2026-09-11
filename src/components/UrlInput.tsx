@@ -1,7 +1,8 @@
-import { Download, Loader2, X } from 'lucide-react';
+﻿import { Download, Loader2, X } from 'lucide-react';
 import { useState, useEffect, useCallback, type DragEvent } from 'react';
 import { useAnalyze } from '@/hooks/useAnalyze';
 import { useUiStore } from '@/store/useUiStore';
+import { useSearchStore } from '@/store/useSearchStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { cn } from '@/lib/cn';
 
@@ -17,7 +18,10 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
   const settings = useSettingsStore((s) => s.settings);
   const analyze = useAnalyze();
 
-  const valid = /youtube\.com|youtu\.be/i.test(url);
+  const looksLikeUrl = /youtu\.?be|youtube\.com/i.test(url) || /^https?:\/\//i.test(url);
+  const navigate = useUiStore((s) => s.navigate);
+  const setQuery = useSearchStore((s) => s.setQuery);
+  const runSearch = useSearchStore((s) => s.search);
 
   // Clipboard auto-detection
   useEffect(() => {
@@ -30,9 +34,18 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
   }, [settings?.clipboardDetection]);
 
   const submit = useCallback(() => {
-    if (!url.trim() || analyzing) return;
-    analyze(url);
-  }, [url, analyzing, analyze]);
+    const trimmed = url.trim();
+    if (!trimmed || analyzing) return;
+
+    if (looksLikeUrl) {
+      analyze(trimmed);
+    } else {
+      // Not a URL -> treat as a YouTube search query
+      setQuery(trimmed);
+      navigate('search');
+      runSearch(trimmed);
+    }
+  }, [url, analyzing, analyze, looksLikeUrl, navigate, setQuery, runSearch]);
 
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
@@ -61,7 +74,7 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
         onDrop={onDrop}
         className={cn(
           'border-b transition-colors duration-150',
-          dragging ? 'border-text-primary' : url && !valid ? 'border-text-secondary' : 'border-border',
+          dragging ? 'border-text-primary' : url && !looksLikeUrl ? 'border-text-secondary' : 'border-border',
           'focus-within:border-text-primary',
         )}
       >
@@ -104,9 +117,9 @@ export function UrlInput({ autoFocus = true }: { autoFocus?: boolean }) {
         </div>
       </div>
 
-      {url && !valid && (
+      {url && !looksLikeUrl && (
         <p className="mt-2 text-[11px] text-text-secondary">
-          That doesn't look like a YouTube URL.
+          Press Enter to search for this on YouTube.
         </p>
       )}
 

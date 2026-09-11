@@ -1,4 +1,4 @@
-import { useUiStore, type Route } from '@/store/useUiStore';
+﻿import { useUiStore, type Route } from '@/store/useUiStore';
 import { useDownloadStore } from '@/store/useDownloadStore';
 import { cn } from '@/lib/cn';
 
@@ -9,6 +9,7 @@ interface NavItem {
 
 const NAV: NavItem[] = [
   { route: 'home', label: 'Download' },
+  { route: 'search', label: 'Search' },
   { route: 'downloads', label: 'Downloads' },
   { route: 'playlists', label: 'Playlists' },
   { route: 'analytics', label: 'Analyzer' },

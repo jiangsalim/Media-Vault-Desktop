@@ -3,22 +3,20 @@
 @tailwind utilities;
 
 /* ------------------------------------------------------------------ */
-/*  DESIGN TOKENS — Navy + Teal brand theme                           */
+/*  DESIGN TOKENS — Monochrome only                                    */
 /* ------------------------------------------------------------------ */
 @layer base {
   :root {
-    /* Dark theme (default) — navy + teal */
-    --bg: 15 21 38;              /* #0F1526 */
-    --surface: 20 26 46;         /* #141A2E */
-    --surface-2: 26 33 56;       /* #1A2138 */
-    --border: 37 45 72;          /* #252D48 */
-    --text-primary: 240 242 245; /* #F0F2F5 */
-    --text-secondary: 139 157 181; /* #8B9DB5 */
-    --muted: 90 100 128;         /* #5A6480 */
-    --hover: 30 39 64;           /* #1E2740 */
-    --selection: 0 194 186;      /* #00C2BA (teal) */
-    --accent: 0 194 186;         /* #00C2BA */
-    --accent-hover: 0 163 156;   /* #00A39C */
+    /* Dark theme (default) */
+    --bg: 15 15 15;
+    --surface: 21 21 21;
+    --surface-2: 27 27 27;
+    --border: 42 42 42;
+    --text-primary: 242 242 242;
+    --text-secondary: 154 154 154;
+    --muted: 102 102 102;
+    --hover: 32 32 32;
+    --selection: 48 48 48;
 
     /* Theme customization — defaults */
     --font-size-base: 13px;
@@ -34,17 +32,15 @@
   }
 
   :root.light {
-    --bg: 250 251 253;
+    --bg: 245 245 245;
     --surface: 255 255 255;
-    --surface-2: 240 242 245;
-    --border: 224 228 235;
-    --text-primary: 15 21 38;
-    --text-secondary: 90 100 128;
-    --muted: 139 157 181;
-    --hover: 240 242 245;
-    --selection: 0 194 186;
-    --accent: 0 194 186;
-    --accent-hover: 0 163 156;
+    --surface-2: 235 235 235;
+    --border: 200 200 200;
+    --text-primary: 24 24 24;
+    --text-secondary: 100 100 100;
+    --muted: 150 150 150;
+    --hover: 230 230 230;
+    --selection: 210 210 210;
   }
 
   *,
@@ -61,7 +57,7 @@
   }
 
   body {
-    font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
     font-size: var(--font-size-base);
     color: rgb(var(--text-primary));
     background-color: rgb(var(--bg));
@@ -70,16 +66,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Numbers, durations, file sizes, code — use monospace */
-  .font-mono,
-  code,
-  pre,
-  kbd,
-  .tabular-nums {
-    font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
-  }
-
-  /* Scrollbar */
+  /* Scrollbar — thin, monochrome */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -96,17 +83,17 @@
   }
 
   ::selection {
-    background: rgb(var(--selection) / 0.35);
+    background: rgb(var(--selection));
     color: rgb(var(--text-primary));
   }
 
-  /* Focus ring — teal accent */
+  /* Focus ring — accessible, visible */
   :focus-visible {
-    outline: 1px solid rgb(var(--accent));
+    outline: 1px solid rgb(var(--text-primary));
     outline-offset: 1px;
   }
 
-  /* Custom range slider */
+  /* Custom range slider styling */
   input[type="range"] {
     -webkit-appearance: none;
     appearance: none;
@@ -120,14 +107,14 @@
     appearance: none;
     width: 12px;
     height: 12px;
-    background: rgb(var(--accent));
+    background: rgb(var(--text-primary));
     border: none;
     cursor: pointer;
   }
   input[type="range"]::-moz-range-thumb {
     width: 12px;
     height: 12px;
-    background: rgb(var(--accent));
+    background: rgb(var(--text-primary));
     border: none;
     border-radius: 0;
     cursor: pointer;
@@ -138,6 +125,7 @@
 /*  COMPONENT CLASSES                                                  */
 /* ------------------------------------------------------------------ */
 @layer components {
+  /* Native-app drag region for the custom titlebar */
   .drag {
     -webkit-app-region: drag;
   }
@@ -145,15 +133,15 @@
     -webkit-app-region: no-drag;
   }
 
-  /* PRIMARY BUTTON — teal accent, uppercase */
+  /* PRIMARY BUTTON — square, 1px border, uppercase */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 border border-teal
-      bg-teal px-4 py-2 text-xs font-semibold uppercase tracking-wider
-      text-white transition-all;
+    @apply inline-flex items-center justify-center gap-2 border border-border
+      bg-surface px-4 py-2 text-xs font-semibold uppercase tracking-wider
+      text-text-primary transition-all;
     transition-duration: var(--animation-speed);
   }
   .btn-primary:hover {
-    @apply border-teal-dark bg-teal-dark;
+    @apply bg-text-primary text-bg;
   }
   .btn-primary:active {
     transform: translateY(1px);
@@ -171,7 +159,7 @@
     transition-duration: var(--animation-speed);
   }
   .btn-ghost:hover {
-    @apply bg-hover text-text-primary border-teal;
+    @apply bg-hover text-text-primary;
   }
   .btn-ghost:active {
     transform: translateY(1px);
@@ -188,7 +176,7 @@
     transition-duration: var(--animation-speed);
   }
   .btn-icon:hover {
-    @apply bg-hover text-teal border-border;
+    @apply bg-hover text-text-primary border-border;
   }
   .btn-icon:active {
     transform: translateY(1px);
@@ -201,7 +189,7 @@
     transition-duration: var(--animation-speed);
   }
   .input-field:focus {
-    @apply border-teal;
+    @apply border-text-primary;
   }
 
   /* INPUT — bordered variant */
@@ -211,10 +199,10 @@
     transition-duration: var(--animation-speed);
   }
   .input-bordered:focus {
-    @apply border-teal;
+    @apply border-text-primary;
   }
 
-  /* CARD — square, thin border */
+  /* CARD — square, thin border, no shadow */
   .card {
     @apply border border-border bg-surface p-3;
   }
@@ -225,7 +213,7 @@
       px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-text-secondary;
   }
 
-  /* SKELETON — navy shimmer */
+  /* SKELETON — monochrome shimmer */
   .skeleton {
     @apply relative overflow-hidden bg-surface-2;
   }
@@ -235,7 +223,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgb(var(--accent) / 0.15),
+      rgb(var(--selection) / 0.6),
       transparent
     );
   }
@@ -271,16 +259,6 @@
   .gpu {
     transform: translateZ(0);
     will-change: transform, opacity;
-  }
-
-  /* LINK — teal accent */
-  a.text-teal,
-  .text-teal {
-    color: rgb(var(--accent));
-  }
-  a.text-teal:hover,
-  .text-teal:hover {
-    color: rgb(var(--accent-hover));
   }
 }
 

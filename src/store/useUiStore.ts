@@ -1,9 +1,10 @@
-/** Lightweight UI store: routing, sidebar, the active analyzed media + toasts. */
+﻿/** Lightweight UI store: routing, sidebar, the active analyzed media + toasts. */
 import { create } from 'zustand';
 import type { VideoInfo, PlaylistInfo } from '@shared/types';
 
 export type Route =
   | 'home'
+  | 'search'
   | 'video'
   | 'downloads'
   | 'playlists'

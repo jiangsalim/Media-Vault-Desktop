@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Shared type contracts used by BOTH the Electron main process and the React
  * renderer. Keeping a single source of truth here prevents IPC payload drift.
  */
@@ -279,7 +279,6 @@ export const IPC = {
   // media analysis
   ANALYZE_URL: 'media:analyze',
   ANALYZE_PLAYLIST: 'media:analyzePlaylist',
-  SEARCH_YT: 'media:searchYt',
   // downloads
   DOWNLOAD_START: 'download:start',
   DOWNLOAD_CHECK_DUPLICATE: 'download:checkDuplicate',

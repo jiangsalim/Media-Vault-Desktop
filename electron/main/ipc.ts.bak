@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Central IPC registration. Every handler is wrapped so exceptions become a
  * typed IpcResult<T> instead of crashing the renderer bridge.
  */
@@ -9,7 +9,7 @@ import {
   type DownloadRequest,
   type AppSettings,
 } from '../../shared/types';
-import { analyzeUrl, analyzePlaylist, searchYoutube } from '../services/ytdlp';
+import { analyzeUrl, analyzePlaylist } from '../services/ytdlp';
 import { downloadManager } from '../services/download-manager';
 import { checkDependencies } from '../services/dependencies';
 import { readSettings, writeSettings } from '../services/settings';
@@ -60,12 +60,6 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }),
   );
 
-  ipcMain.handle(
-    IPC.SEARCH_YT,
-    safe(async (_e, query: string, count?: number) => {
-      return searchYoutube(query, count ?? 10);
-    }),
-  );
   /* ----------------------------- downloads ---------------------------- */
   ipcMain.handle(
     IPC.DOWNLOAD_START,

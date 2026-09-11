@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useCallback } from 'react';
+﻿import { Suspense, lazy, useEffect, useCallback } from 'react';
 import { TitleBar } from '@/components/TitleBar';
 import { Sidebar } from '@/components/Sidebar';
 import { Toasts } from '@/components/Toasts';
@@ -11,6 +11,7 @@ import { useSettingsStore } from '@/store/useSettingsStore';
 import { useDownloadStore } from '@/store/useDownloadStore';
 
 const HomePage = lazy(() => import('@/pages/HomePage').then((m) => ({ default: m.HomePage })));
+const SearchPage = lazy(() => import('@/pages/SearchPage').then((m) => ({ default: m.SearchPage })));
 const VideoPage = lazy(() => import('@/pages/VideoPage').then((m) => ({ default: m.VideoPage })));
 const DownloadsPage = lazy(() => import('@/pages/DownloadsPage').then((m) => ({ default: m.DownloadsPage })));
 const PlaylistsPage = lazy(() => import('@/pages/PlaylistsPage').then((m) => ({ default: m.PlaylistsPage })));
@@ -24,6 +25,7 @@ const AboutPage = lazy(() => import('@/pages/AboutPage').then((m) => ({ default:
 
 const PAGES: Record<Route, React.ComponentType> = {
   home: HomePage,
+  search: SearchPage,
   video: VideoPage,
   downloads: DownloadsPage,
   playlists: PlaylistsPage,
