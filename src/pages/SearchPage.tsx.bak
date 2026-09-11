@@ -12,18 +12,15 @@ export function SearchPage() {
   const query = useSearchStore((s) => s.query);
   const setQuery = useSearchStore((s) => s.setQuery);
   const search = useSearchStore((s) => s.search);
-  const loadMore = useSearchStore((s) => s.loadMore);
+  const clear = useSearchStore((s) => s.clear);
   const results = useSearchStore((s) => s.results);
   const loading = useSearchStore((s) => s.loading);
-  const loadingMore = useSearchStore((s) => s.loadingMore);
-  const hasMore = useSearchStore((s) => s.hasMore);
   const error = useSearchStore((s) => s.error);
   const filters = useSearchStore((s) => s.filters);
 
   const analyze = useAnalyze();
   const [input, setInput] = useState(query);
   const inputRef = useRef<HTMLInputElement>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -33,28 +30,13 @@ export function SearchPage() {
     setInput(query);
   }, [query]);
 
-  // Infinite scroll: watch the sentinel at the bottom of the list
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          loadMore();
-        }
-      },
-      { rootMargin: '200px' }, // trigger 200px before reaching the bottom
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [loadMore]);
-
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (input.trim()) search(input);
   };
 
   const onSelect = (result: VideoSearchResult) => {
+    // Hand off to the existing analyze pipeline — navigates to Video page.
     analyze(result.url);
   };
 
@@ -163,36 +145,11 @@ export function SearchPage() {
               : 'Type a query above and press Enter.'}
           </div>
         ) : (
-          <>
-            <div className="flex flex-col">
-              {filtered.map((r) => (
-                <SearchResultRow key={r.id} result={r} onSelect={onSelect} />
-              ))}
-            </div>
-
-            {/* Infinite scroll sentinel + Load more */}
-            <div ref={sentinelRef} className="py-6">
-              {loadingMore ? (
-                <div className="flex items-center justify-center gap-2 text-xs text-text-secondary">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Loading more...
-                </div>
-              ) : hasMore ? (
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => loadMore()}
-                    className="btn-ghost"
-                  >
-                    Load more
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center font-mono text-[10px] uppercase tracking-widest text-muted">
-                  — No more results —
-                </div>
-              )}
-            </div>
-          </>
+          <div className="flex flex-col">
+            {filtered.map((r) => (
+              <SearchResultRow key={r.id} result={r} onSelect={onSelect} />
+            ))}
+          </div>
         )}
       </div>
     </div>
