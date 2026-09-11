@@ -61,9 +61,9 @@ npm run build:linux   # Linux AppImage + deb
 Output is written to release/<version>/. See BUILD.md for full details.
 
 🌐 Links
-Website: https://media-vault-website.vercel.app
+Website: https://herman-software-website.vercel.app
 
-GitHub: https://github.com/jiangsalim/MediaVault-YoutubeDownloader
+GitHub: https://github.com/jiangsalim/Media-Vault-Desktop
 
 🙏 Acknowledgements
 MediaVault would not be possible without:
@@ -91,20 +91,3 @@ Email: infohermansoftware@gmail.com
 MIT — see source headers. yt-dlp and FFmpeg are separate projects under their own licenses.
 
 text
-
----
-
-## Changes Made:
-
-| File | What Changed |
-|------|-------------|
-| `package.json` | Author → HERMAN Software Solutions, homepage → your site, publish → your GitHub |
-| `index.html` | Title → "MediaVault — Free YouTube Downloader", added description meta |
-| `README.md` | Removed original author's Discord/YouTube, added your branding |
-
----
-
-Save all files in VS Code. Then let's build! 🎯
-
-```bash
-npm install

@@ -1,4 +1,4 @@
-/** About page — MARPACE branding, socials, version, shortcuts. */
+﻿/** About page — Herman Software Solutions branding, socials, version, shortcuts. */
 export function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -6,22 +6,17 @@ export function AboutPage() {
 
       <div className="divider" />
 
-      {/* ASCII logo */}
-      <pre className="text-[10px] leading-tight text-muted select-none text-center">
-{`
-
-███╗   ███╗ █████╗ ██████╗ ██████╗  █████╗  ██████╗███████╗
-████╗ ████║██╔══██╗██╔══██╗██╔══██╗██╔══██╗██╔════╝██╔════╝
-██╔████╔██║███████║██████╔╝██████╔╝███████║██║     █████╗  
-██║╚██╔╝██║██╔══██║██╔══██╗██╔═══╝ ██╔══██║██║     ██╔══╝  
-██║ ╚═╝ ██║██║  ██║██║  ██║██║     ██║  ██║╚██████╗███████╗
-╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝
-                          M A R P A C E
-`}
-      </pre>
-
       <p className="text-center text-xs text-text-secondary">
-        A premium desktop YouTube download manager by MARPACE.
+        A premium desktop YouTube download manager by{' '}
+        <a
+          href="https://herman-software-website.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
+          className="text-accent hover:underline"
+        >
+          Herman Software Solutions
+        </a>
+        .
       </p>
 
       <div className="divider" />
@@ -31,11 +26,9 @@ export function AboutPage() {
         <p className="label mb-3">Connect</p>
         <div className="border border-border">
           {[
-            ['GitHub', 'https://github.com/marpace1/MediaVault-YoutubeDownloader_Analyzer', 'github.com/marpace1/MediaVault'],
-            ['Discord Server', 'https://discord.gg/PJp2uA9xt7', 'discord.gg/PJp2uA9xt7'],
-            ['Discord', 'marpaceamv', 'marpaceamv'],
-            ['Email', 'mailto:marpaceamv@gmail.com', 'marpaceamv@gmail.com'],
-            ['YouTube', 'https://www.youtube.com/@marpace1', 'youtube.com/@marpace1'],
+            ['GitHub', 'https://github.com/jiangsalim/Media-Vault-Desktop', 'github.com/jiangsalim/Media-Vault-Desktop'],
+            ['Email', 'mailto:infohermansoftware@gmail.com', 'infohermansoftware@gmail.com'],
+            ['YouTube', 'https://www.youtube.com/@HermanSoftwareSolutions', 'youtube.com/@HermanSoftwareSolutions'],
           ].map(([name, url, display]) => (
             <button
               key={name}
@@ -54,7 +47,7 @@ export function AboutPage() {
         <p className="label mb-3">Version</p>
         <div className="border border-border">
           {[
-            ['MARPACE MediaVault', '1.0.0'],
+            ['MediaVault', '1.0.0'],
             ['Electron', '32.x'],
             ['React', '18.3'],
             ['Vite', '5.4'],
@@ -77,7 +70,7 @@ export function AboutPage() {
         <p className="label mb-3">License</p>
         <div className="card">
           <p className="text-xs text-text-secondary leading-relaxed">
-            MIT License. Copyright (c) 2026 MARPACE.
+            MIT License. Copyright (c) 2026 Herman Software Solutions.
             This software is provided as-is, without warranty of any kind.
           </p>
         </div>

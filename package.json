@@ -1,12 +1,12 @@
-{
+﻿{
   "name": "mediavault-desktop",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "MediaVault — Free YouTube downloader for Windows, Mac & Linux. Download MP3, MP4, thumbnails, subtitles, and playlists in HD.",
   "author": {
-    "name": "MediaVault",
+    "name": "Herman Software Solutions",
     "email": "infohermansoftware@gmail.com"
   },
-  "homepage": "https://media-vault-website.vercel.app",
+  "homepage": "https://herman-software-website.vercel.app",
   "license": "MIT",
   "main": "dist-electron/main/index.js",
   "private": true,
@@ -72,12 +72,24 @@
       {
         "from": "resources/bin/${os}",
         "to": "bin",
-        "filter": ["**/*", "!.gitkeep"]
+        "filter": [
+          "**/*",
+          "!.gitkeep"
+        ]
       }
     ],
-    "asarUnpack": ["**/*.node"],
+    "asarUnpack": [
+      "**/*.node"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "build/icon.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
@@ -91,7 +103,10 @@
       "shortcutName": "MediaVault"
     },
     "mac": {
-      "target": ["dmg", "zip"],
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "icon": "build/icon.icns",
       "category": "public.app-category.utilities",
       "hardenedRuntime": true,
@@ -100,7 +115,10 @@
       "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "build/icon.png",
       "category": "AudioVideo",
       "maintainer": "MediaVault"
@@ -109,8 +127,13 @@
       {
         "provider": "github",
         "owner": "jiangsalim",
-        "repo": "MediaVault-YoutubeDownloader"
+        "repo": "Media-Vault-Desktop"
       }
     ]
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true,
+    "electron@32.3.3": true,
+    "esbuild@0.21.5": true
   }
 }

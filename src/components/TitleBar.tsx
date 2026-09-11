@@ -7,7 +7,7 @@ export function TitleBar() {
     <div className="drag flex h-9 shrink-0 items-center justify-between border-b border-border bg-surface px-3">
       <div className="flex items-center gap-2 pl-1">
         <span className="text-xs font-bold uppercase tracking-widest text-text-primary">
-          MARPACE
+          HERMAN SOFTWARE
         </span>
         <span className="text-[10px] text-muted">v2.0.0</span>
       </div>
