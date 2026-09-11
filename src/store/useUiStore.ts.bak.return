@@ -30,10 +30,6 @@ interface UiState {
   currentPlaylist: PlaylistInfo | null;
   toasts: Toast[];
   commandPaletteOpen: boolean;
-  /** Route to return to when the "back" button is used */
-  returnTo: Route | null;
-  /** Label shown on the back button, e.g. "Search: `"spice diana`"" */
-  returnLabel: string | null;
 
   navigate: (route: Route) => void;
   toggleSidebar: () => void;
@@ -43,10 +39,6 @@ interface UiState {
   toast: (message: string, type?: Toast['type']) => void;
   dismissToast: (id: string) => void;
   setCommandPaletteOpen: (open: boolean) => void;
-  /** Record where a page was reached from, for the back button */
-  setReturnTo: (route: Route | null, label?: string | null) => void;
-  /** Navigate to the return route (if any) and clear it */
-  goBack: () => void;
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -57,10 +49,8 @@ export const useUiStore = create<UiState>((set) => ({
   currentPlaylist: null,
   toasts: [],
   commandPaletteOpen: false,
-  returnTo: null,
-  returnLabel: null,
 
-  navigate: (route) => set({ route, returnTo: null, returnLabel: null }),
+  navigate: (route) => set({ route }),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setAnalyzing: (analyzing) => set({ analyzing }),
   setVideo: (currentVideo) => set({ currentVideo }),
@@ -72,13 +62,4 @@ export const useUiStore = create<UiState>((set) => ({
     })),
   dismissToast: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
   setCommandPaletteOpen: (commandPaletteOpen) => set({ commandPaletteOpen }),
-
-  setReturnTo: (returnTo, returnLabel = null) => set({ returnTo, returnLabel }),
-
-  goBack: () =>
-    set((s) => ({
-      route: s.returnTo ?? s.route,
-      returnTo: null,
-      returnLabel: null,
-    })),
 }));

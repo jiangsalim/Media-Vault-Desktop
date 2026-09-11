@@ -2,7 +2,6 @@
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { Search, Loader2, X } from 'lucide-react';
 import { useSearchStore } from '@/store/useSearchStore';
-import { useUiStore } from '@/store/useUiStore';
 import { SearchResultRow } from '@/components/SearchResultRow';
 import { SearchFilters } from '@/components/SearchFilters';
 import { BackToBar } from '@/components/BackToBar';
@@ -25,7 +24,6 @@ export function SearchPage() {
   const filters = useSearchStore((s) => s.filters);
 
   const analyze = useAnalyze();
-  const setReturnTo = useUiStore((s) => s.setReturnTo);
   const [input, setInput] = useState(query);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [focused, setFocused] = useState(false);
@@ -92,8 +90,6 @@ export function SearchPage() {
   };
 
   const onSelect = (result: VideoSearchResult) => {
-    const label = query ? `Search: "${query}"` : 'Back to search';
-    setReturnTo('search', label);
     analyze(result.url);
   };
 
@@ -141,7 +137,7 @@ export function SearchPage() {
 
   return (
     <div className="mx-auto flex h-full w-full max-w-4xl flex-col">
-      <BackToBar />`n      <BackToBar />`n      <BackToBar />`n      <h1 className="section-title">Search</h1>
+      <BackToBar />`n      <BackToBar />`n      <h1 className="section-title">Search</h1>
       <p className="text-xs text-text-secondary mb-4">
         Find videos on YouTube and pick one to download.
       </p>
