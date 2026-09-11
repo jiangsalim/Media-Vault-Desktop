@@ -1,93 +1,143 @@
 <p align="center">
-<img src="banner.png" alt="MediaVault Banner" width="100%"/>
+  <img src="banner.png" alt="MediaVault Banner" width="100%"/>
 </p>
 
-<h1 align="center">MediaVault Desktop</h1>
-
-<p align="center"><em>Download. Analyze. Manage. — Free YouTube Downloader</em></p>
+<h1 align="center">MediaVault</h1>
 
 <p align="center">
-The ultimate YouTube downloader for Windows, Mac & Linux. Download videos in HD, extract MP3 audio, grab thumbnails, subtitles, and entire playlists — all in one beautiful desktop app. Built with love by HERMAN Software Solutions.
+  <strong>A premium desktop YouTube download manager by Herman Software Solutions</strong>
+</p>
+
+<p align="center">
+  <a href="https://github.com/jiangsalim/Media-Vault-Desktop/releases/latest">
+    <img src="https://img.shields.io/github/v/release/jiangsalim/Media-Vault-Desktop?style=flat-square&color=00C2BA" alt="Latest Release">
+  </a>
+  <a href="https://github.com/jiangsalim/Media-Vault-Desktop/releases">
+    <img src="https://img.shields.io/github/downloads/jiangsalim/Media-Vault-Desktop/total?style=flat-square&color=00C2BA" alt="Downloads">
+  </a>
+  <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-blue?style=flat-square" alt="Platform">
+  <img src="https://img.shields.io/github/license/jiangsalim/Media-Vault-Desktop?style=flat-square" alt="License">
+</p>
+
+<p align="center">
+  <a href="https://github.com/jiangsalim/Media-Vault-Desktop/releases/latest">
+    <img src="https://img.shields.io/badge/%E2%AC%87_Download_for_Windows-00C2BA?style=for-the-badge" alt="Download for Windows">
+  </a>
 </p>
 
 ---
 
-## ✨ Features
+## What is MediaVault?
 
-| Area | Highlights |
-|------|-----------|
-| **Video** | 144p → 2160p (4K) + *Best Available*, MP4 / MKV output, automatic FFmpeg muxing |
-| **Audio** | MP3, M4A, AAC, WAV, FLAC, OGG · 128 / 192 / 256 / 320 kbps · *Best* |
-| **Thumbnails** | Every available resolution with dimensions + lightbox preview & one-click download |
-| **Subtitles** | SRT / VTT / TXT, human + auto-generated, multi-language |
-| **Analytics** | Views, likes, comments, subs, tags, category, language, live/age status, formats, tracks |
-| **Playlists** | Full or hand-picked downloads, bulk video/audio with one quality selection |
-| **Download Manager** | Queue, concurrency limit, pause/resume/cancel/retry, speed + ETA, search/filter/sort |
-| **Smart** | Clipboard URL detection, drag & drop, paste button, URL validation, duplicate detection |
-| **UX** | Dark/Light/System themes, glassmorphism, Framer Motion transitions, skeletons, toasts, context menus |
-| **Platform** | Windows (NSIS), macOS (DMG/ZIP), Linux (AppImage/deb), auto-updater |
+MediaVault is a **free, open, native desktop app** for downloading YouTube content — videos, audio, thumbnails, subtitles, and playlists. Built with Electron + React, powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [FFmpeg](https://ffmpeg.org), and wrapped in a fast, minimal interface.
+
+No ads. No account. No telemetry. Just download what you want.
+
+<p align="center">
+  <img src="ss.webp" alt="MediaVault screenshot" width="90%"/>
+</p>
 
 ---
 
-## 🚀 Quick Start (Development)
+## Features
+
+| Area | What you get |
+|------|--------------|
+| **Video** | MP4 / MKV · 144p to 4K · quality picker · FFmpeg auto-muxing |
+| **Audio** | MP3, M4A, AAC, WAV, FLAC, OGG · 128-320 kbps |
+| **Thumbnails** | Every available resolution · lightbox preview · one-click save |
+| **Subtitles** | SRT / VTT / TXT · human + auto-generated · multi-language |
+| **Search** | Live YouTube suggestions · infinite scroll · duration/date/sort filters |
+| **Trending** | Region-aware curated feed · grid layout |
+| **Preview** | Embedded YouTube player — watch before you download |
+| **Analyzer** | Full metadata: views, likes, comments, tags, formats, codecs |
+| **Playlists** | Bulk download · pick videos · one quality selection |
+| **Download Manager** | Queue · concurrency · pause/resume/cancel/retry · live progress |
+| **Themes** | Dark · Light · System |
+| **Native** | Fast, offline-first, no browser required |
+
+---
+
+## Installation
+
+### Windows (recommended)
+
+1. **[Download the latest installer »](https://github.com/jiangsalim/Media-Vault-Desktop/releases/latest)**
+2. Run `MediaVault-Setup-x.x.x.exe`
+3. **Windows SmartScreen will warn** (normal — the app isn't code-signed yet). Click **More info → Run anyway**.
+4. Launch **MediaVault** from your Start menu.
+
+### System Requirements
+
+- Windows 10 or 11 (64-bit)
+- ~500 MB free disk space
+- Internet connection for downloading content
+
+> macOS and Linux support is planned. Watch the repo for updates.
+
+---
+
+## For Developers
+
+### Prerequisites
+
+- **Node.js 22 LTS** - [download](https://nodejs.org)
+- **npm 10+** (ships with Node)
+- **Git**
+- **Windows only:** Visual Studio Build Tools (C++) for the native SQLite module
+
+### Build from source
 
 ```bash
-# 1. Install dependencies
+git clone https://github.com/jiangsalim/Media-Vault-Desktop.git
+cd Media-Vault-Desktop
 npm install
-
-# 2. (Optional) rebuild native modules for Electron's ABI
 npm run rebuild
-
-# 3. Make sure yt-dlp and ffmpeg are available
-#    - either on your system PATH, or
-#    - fetched into resources/bin via:  npm run fetch-binaries
-#    - or set custom paths later in Settings → Engine status
-
-# 4. Start the app in dev mode (Vite + Electron with HMR)
+npm run fetch-binaries
 npm run dev
+```
 
+### Build an installer
 
-📦 Production Build
-bash
-# Fetch bundled binaries for the target platform (recommended)
-npm run fetch-binaries          # current OS
-# npm run fetch-binaries:all    # yt-dlp for all OSes
+```bash
+npm run build:win
+```
 
-# Build installers
-npm run build         # current platform
-npm run build:win     # Windows x64 NSIS installer
-npm run build:mac     # macOS DMG + ZIP
-npm run build:linux   # Linux AppImage + deb
-Output is written to release/<version>/. See BUILD.md for full details.
+See **[BUILD.md](./BUILD.md)** and **[INSTALL.md](./INSTALL.md)** for full details.
 
-🌐 Links
-Website: https://herman-software-website.vercel.app
+---
 
-GitHub: https://github.com/jiangsalim/Media-Vault-Desktop
+## Tech Stack
 
-🙏 Acknowledgements
-MediaVault would not be possible without:
+| Layer | Tech |
+|-------|------|
+| Runtime | Electron 32 |
+| UI | React 18 + Vite 5 |
+| Language | TypeScript |
+| Styling | Tailwind CSS · Space Grotesk · IBM Plex Mono |
+| State | Zustand |
+| Storage | better-sqlite3 |
+| Engines | yt-dlp · FFmpeg |
 
-Electron
+---
 
-React
+## Links
 
-TypeScript
+- **Website** - [herman-software-website.vercel.app](https://herman-software-website.vercel.app/)
+- **YouTube** - [@HermanSoftwareSolutions](https://www.youtube.com/@HermanSoftwareSolutions)
+- **Report a bug** - [Issues](https://github.com/jiangsalim/Media-Vault-Desktop/issues)
+- **Contact** - [infohermansoftware@gmail.com](mailto:infohermansoftware@gmail.com)
 
-TailwindCSS
+---
 
-Framer Motion
+## License
 
-yt-dlp
+MIT (c) 2026 Herman Software Solutions
 
-FFmpeg
+MediaVault bundles yt-dlp and FFmpeg, which are separate projects under their own licenses (Unlicense and LGPL/GPL respectively).
 
-better-sqlite3
+---
 
-📧 Support
-Email: infohermansoftware@gmail.com
-
-📄 License
-MIT — see source headers. yt-dlp and FFmpeg are separate projects under their own licenses.
-
-text
+<p align="center">
+  <sub>Built with care by <a href="https://herman-software-website.vercel.app/">Herman Software Solutions</a></sub>
+</p>
