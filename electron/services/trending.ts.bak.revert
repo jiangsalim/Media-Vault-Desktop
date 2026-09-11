@@ -16,9 +16,9 @@ const execFileAsync = promisify(execFile);
 const log = createLogger('trending');
 
 /** How many items to fetch per query */
-const PER_QUERY = 5;
+const PER_QUERY = 6;
 /** Max simultaneous yt-dlp processes (batching) */
-const CONCURRENCY = 1;
+const CONCURRENCY = 6;
 /** Cache TTL (15 minutes) */
 const CACHE_TTL_MS = 45 * 60 * 1000;
 
@@ -26,9 +26,18 @@ const CACHE_TTL_MS = 45 * 60 * 1000;
 const TRENDING_QUERIES = [
   'trending music 2026',
   'top hits this week',
+  'popular songs now',
+  'viral songs today',
+  'chart hits',
+  'new music releases',
+  'best songs right now',
+  'hot tracks',
   'trending afrobeat',
-  'new ugandan music',
   'trending bongo flava',
+  'trending dancehall',
+  'trending gospel',
+  'trending hip hop',
+  'new ugandan music',
 ];
 
 interface RawEntry {
@@ -105,8 +114,9 @@ async function runQuery(
     '--dump-single-json',
     '--flat-playlist',
     '--no-warnings',
-    '--extractor-retries', '3',
-    '--socket-timeout', '20',
+    '--extractor-retries', '0',
+    '--socket-timeout', '10',
+    '--no-check-certificates',
     '--geo-bypass',
     '--geo-bypass-country', region,
     '--playlist-end', String(PER_QUERY),
@@ -115,8 +125,8 @@ async function runQuery(
 
   try {
     const { stdout } = await execFileAsync(bin, args, {
-      maxBuffer: 1024 * 1024 * 64,
-      timeout: 25_000,
+      maxBuffer: 1024 * 1024 * 32,
+      timeout: 15_000,
     });
     const raw = JSON.parse(stdout) as RawResponse;
     return (raw.entries ?? []).map(mapEntry);
