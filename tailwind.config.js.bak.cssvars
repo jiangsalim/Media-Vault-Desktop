@@ -1,11 +1,11 @@
-﻿/** @type {import('tailwindcss').Config} */
+/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       borderColor: { DEFAULT: '#252D48', accent: '#00C2BA' },
       colors: {
-        // ── Brand palette (static — does not change with theme) ──
+        // ── Brand palette (from website) ──
         navy: {
           DEFAULT: '#0F1526',
           light: '#141A2E',
@@ -15,22 +15,24 @@ export default {
           DEFAULT: '#00C2BA',
           dark: '#00A39C',
         },
-        accent: '#00C2BA',
-        'accent-hover': '#00A39C',
         charcoal: '#293A46',
         'gray-light': '#F0F2F5',
         'gray-medium': '#8B9DB5',
 
-        // ── UI tokens (CSS-variable-driven — theme aware) ──
-        bg: 'rgb(var(--bg) / <alpha-value>)',
-        surface: 'rgb(var(--surface) / <alpha-value>)',
-        'surface-2': 'rgb(var(--surface-2) / <alpha-value>)',
-        border: 'rgb(var(--border) / <alpha-value>)',
-        'text-primary': 'rgb(var(--text-primary) / <alpha-value>)',
-        'text-secondary': 'rgb(var(--text-secondary) / <alpha-value>)',
-        muted: 'rgb(var(--muted) / <alpha-value>)',
-        hover: 'rgb(var(--hover) / <alpha-value>)',
-        selection: 'rgb(var(--selection) / <alpha-value>)',
+        // ── UI tokens (remapped to navy palette) ──
+        bg: '#0F1526',
+        surface: '#141A2E',
+        'surface-2': '#1A2138',
+        border: '#252D48',
+        'text-primary': '#F0F2F5',
+        'text-secondary': '#8B9DB5',
+        muted: '#5A6480',
+        hover: '#1E2740',
+        selection: '#00C2BA',
+
+        // ── Accent (teal) ──
+        accent: '#00C2BA',
+        'accent-hover': '#00A39C',
       },
       fontFamily: {
         sans: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],

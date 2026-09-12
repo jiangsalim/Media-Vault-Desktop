@@ -10,6 +10,7 @@ import type { ThemeMode } from '@shared/types';
 /* ------------------------------------------------------------------ */
 
 interface ThemeCustom {
+  mode: 'dark' | 'light' | 'system';
   fontSizeBase: number;       // 11–18
   fontSizeNav: number;        // 9–14
   fontSizeLabel: number;      // 9–14
@@ -22,6 +23,7 @@ interface ThemeCustom {
 }
 
 const DEFAULTS: ThemeCustom = {
+  mode: 'dark',
   fontSizeBase: 13,
   fontSizeNav: 11,
   fontSizeLabel: 11,
@@ -74,10 +76,18 @@ export function ThemePage() {
     });
   }, []);
 
-  // Color mode lives in settings store (single source of truth)
-  const mode = useSettingsStore((s) => s.settings?.theme ?? 'dark');
-  const updateSettings = useSettingsStore((s) => s.update);
-  const setMode = (m: ThemeMode) => updateSettings({ theme: m });
+  // Apply mode change
+  const setMode = (mode: ThemeCustom['mode']) => {
+    const resolved = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+      : mode;
+    const root = document.documentElement;
+    root.classList.toggle('light', resolved === 'light');
+    root.classList.remove('dark');
+    update('mode', mode);
+    // Re-apply border/text opacity for new mode
+    setTimeout(() => applyToDOM({ ...theme, mode }), 0);
+  };
 
   // Apply on mount
   useEffect(() => {
@@ -88,7 +98,9 @@ export function ThemePage() {
     saveCustom(DEFAULTS);
     setThemeState({ ...DEFAULTS });
     applyToDOM(DEFAULTS);
-    // Note: color mode not reset here — use Color Mode buttons
+    // Reset mode too
+    const root = document.documentElement;
+    root.classList.remove('light');
   };
 
   return (

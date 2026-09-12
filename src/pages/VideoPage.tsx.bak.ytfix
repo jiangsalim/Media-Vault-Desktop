@@ -44,7 +44,7 @@ export function VideoPage() {
           {showPlayer ? (
             <div className="relative">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}&widget_referrer=${encodeURIComponent(window.location.origin)}`}
+                src={`https://www.youtube.com/embed/${video.id}?autoplay=1&mute=1&rel=0`}
                 className="aspect-video w-full border border-border bg-black"
                 title={video.title}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

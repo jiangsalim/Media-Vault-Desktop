@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -10,6 +10,7 @@ import type { ThemeMode } from '@shared/types';
 /* ------------------------------------------------------------------ */
 
 interface ThemeCustom {
+  mode: 'dark' | 'light' | 'system';
   fontSizeBase: number;       // 11–18
   fontSizeNav: number;        // 9–14
   fontSizeLabel: number;      // 9–14
@@ -22,6 +23,7 @@ interface ThemeCustom {
 }
 
 const DEFAULTS: ThemeCustom = {
+  mode: 'dark',
   fontSizeBase: 13,
   fontSizeNav: 11,
   fontSizeLabel: 11,
@@ -58,8 +60,17 @@ function applyToDOM(t: ThemeCustom) {
   root.style.setProperty('--content-padding', `${t.contentPadding}px`);
   root.style.setProperty('--animation-speed', `${t.animationSpeed}ms`);
 
-  // Note: border/text opacity blending was removed
-  // Colors are now managed by the .light / .dark class via CSS variables
+  // Border opacity — blend the border color toward bg
+  const borderBase = root.classList.contains('light') ? [200, 200, 200] : [42, 42, 42];
+  const bgBase = root.classList.contains('light') ? [245, 245, 245] : [15, 15, 15];
+  const blended = borderBase.map((c, i) => Math.round(bgBase[i]! + (c - bgBase[i]!) * t.borderOpacity));
+  root.style.setProperty('--border', `${blended[0]} ${blended[1]} ${blended[2]}`);
+
+  // Text opacity
+  const textBase = root.classList.contains('light') ? [24, 24, 24] : [242, 242, 242];
+  const bgForText = root.classList.contains('light') ? [245, 245, 245] : [15, 15, 15];
+  const textBlended = textBase.map((c, i) => Math.round(bgForText[i]! + (c - bgForText[i]!) * t.textOpacity));
+  root.style.setProperty('--text-primary', `${textBlended[0]} ${textBlended[1]} ${textBlended[2]}`);
 }
 
 export function ThemePage() {
@@ -74,10 +85,18 @@ export function ThemePage() {
     });
   }, []);
 
-  // Color mode lives in settings store (single source of truth)
-  const mode = useSettingsStore((s) => s.settings?.theme ?? 'dark');
-  const updateSettings = useSettingsStore((s) => s.update);
-  const setMode = (m: ThemeMode) => updateSettings({ theme: m });
+  // Apply mode change
+  const setMode = (mode: ThemeCustom['mode']) => {
+    const resolved = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+      : mode;
+    const root = document.documentElement;
+    root.classList.toggle('light', resolved === 'light');
+    root.classList.remove('dark');
+    update('mode', mode);
+    // Re-apply border/text opacity for new mode
+    setTimeout(() => applyToDOM({ ...theme, mode }), 0);
+  };
 
   // Apply on mount
   useEffect(() => {
@@ -88,7 +107,9 @@ export function ThemePage() {
     saveCustom(DEFAULTS);
     setThemeState({ ...DEFAULTS });
     applyToDOM(DEFAULTS);
-    // Note: color mode not reset here — use Color Mode buttons
+    // Reset mode too
+    const root = document.documentElement;
+    root.classList.remove('light');
   };
 
   return (
