@@ -294,6 +294,7 @@ export const IPC = {
   ANALYZE_URL: 'media:analyze',
   ANALYZE_PLAYLIST: 'media:analyzePlaylist',
   SEARCH_YT: 'media:searchYt',
+  STREAM_GET_URL: 'media:streamGetUrl',
   TRENDING_GET: 'media:trendingGet',
   SUGGEST_GET: 'media:suggestGet',
   // downloads

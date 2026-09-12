@@ -9,7 +9,7 @@ import {
   type DownloadRequest,
   type AppSettings,
 } from '../../shared/types';
-import { analyzeUrl, analyzePlaylist, searchYoutube, getStreamUrl } from '../services/ytdlp';
+import { analyzeUrl, analyzePlaylist, searchYoutube } from '../services/ytdlp';
 import { getTrending } from '../services/trending';
 import { getSuggestions } from '../services/suggest';
 import { downloadManager } from '../services/download-manager';
