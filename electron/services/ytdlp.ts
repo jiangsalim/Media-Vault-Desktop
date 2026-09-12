@@ -348,3 +348,46 @@ export async function searchYoutube(
     throw new Error(humanizeError(stderr));
   }
 }
+
+/* ------------------------------- streams ---------------------------------- */
+
+/**
+ * Fetch a direct playable stream URL via yt-dlp.
+ * Prefers progressive MP4 (H.264+AAC) so Chromium's <video> can decode
+ * natively — no muxing needed for preview.
+ */
+export async function getStreamUrl(
+  url: string,
+  maxHeight = 720,
+): Promise<string> {
+  const { bin, common } = binArgsBase();
+
+  const fmt = [
+    `22[ext=mp4]`,
+    `18[ext=mp4]`,
+    `best[height<=${maxHeight}][ext=mp4][acodec!=none][vcodec*=avc1]`,
+    `best[ext=mp4][acodec!=none][vcodec*=avc1]`,
+    `best[height<=${maxHeight}][acodec!=none][vcodec!=none]`,
+    `best[acodec!=none][vcodec!=none]`,
+    `best[height<=${maxHeight}]`,
+    `best`,
+  ].join('/');
+
+  const args = ['-g', '-f', fmt, '--no-playlist', ...common, url];
+
+  log.info('stream url', url, `<= ${maxHeight}p`);
+
+  try {
+    const { stdout } = await execFileAsync(bin, args, {
+      maxBuffer: 1024 * 1024 * 8,
+      timeout: 30_000,
+    });
+    const first = stdout.trim().split('\n')[0];
+    if (!first) throw new Error('No stream URL returned');
+    return first;
+  } catch (err) {
+    const stderr =
+      (err as { stderr?: string }).stderr ?? (err as Error).message;
+    throw new Error(humanizeError(stderr));
+  }
+}
