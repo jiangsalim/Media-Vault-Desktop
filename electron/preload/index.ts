@@ -62,6 +62,7 @@ const api = {
 
   /* file management */
   openLocation: (path: string) => invoke<boolean>(IPC.FILE_OPEN_LOCATION, path),
+  openExternal: (url: string) => invoke<boolean>(IPC.FILE_OPEN_EXTERNAL, url),
   openFile: (path: string) => invoke<boolean>(IPC.FILE_OPEN, path),
   pickDirectory: () => invoke<string | null>(IPC.PICK_DIRECTORY),
   pickFile: () => invoke<string | null>(IPC.PICK_FILE),

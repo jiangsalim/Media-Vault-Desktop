@@ -168,6 +168,13 @@ export function registerIpc(getWindow: () => BrowserWindow | null): void {
     }),
   );
   ipcMain.handle(IPC.DEPS_CHECK, safe(async () => checkDependencies()));
+  ipcMain.handle(
+    IPC.FILE_OPEN_EXTERNAL,
+    safe(async (_e, url: string) => {
+      await shell.openExternal(url);
+      return true;
+    }),
+  );
   ipcMain.handle(IPC.STATS_GET, safe(async () => getStatistics()));
 
   /* ------------------------------- updater ---------------------------- */

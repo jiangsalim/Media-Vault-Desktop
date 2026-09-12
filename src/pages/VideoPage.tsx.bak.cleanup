@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { UrlInput } from '@/components/UrlInput';
 import { BackToBar } from '@/components/BackToBar';
 import { QualityPanel } from '@/components/video/QualityPanel';
@@ -27,6 +28,7 @@ export function VideoPage() {
   const video = useUiStore((s) => s.currentVideo);
   const analyzing = useUiStore((s) => s.analyzing);
   const [tab, setTab] = useState<Tab>('video');
+  const [showPlayer, setShowPlayer] = useState(true);
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * yt-dlp integration: media analysis (metadata extraction). Download execution
  * lives in download-manager.ts; this module is purely about parsing the rich
  * `--dump-single-json` output into our typed VideoInfo / PlaylistInfo shapes.
@@ -362,17 +362,13 @@ export async function getStreamUrl(
 ): Promise<string> {
   const { bin, common } = binArgsBase();
 
-  // Chain: muxed first (best UX), then H.264 video-only (still plays, no audio),
-  // then whatever's available. Chromium can decode avc1 but not all VP9/AV1.
   const fmt = [
     `22[ext=mp4]`,
     `18[ext=mp4]`,
     `best[height<=${maxHeight}][ext=mp4][acodec!=none][vcodec*=avc1]`,
     `best[ext=mp4][acodec!=none][vcodec*=avc1]`,
-    `bestvideo[height<=${maxHeight}][ext=mp4][vcodec*=avc1]`,
-    `bestvideo[ext=mp4][vcodec*=avc1]`,
-    `bestvideo[height<=${maxHeight}][vcodec*=avc1]`,
-    `bestvideo[vcodec*=avc1]`,
+    `best[height<=${maxHeight}][acodec!=none][vcodec!=none]`,
+    `best[acodec!=none][vcodec!=none]`,
     `best[height<=${maxHeight}]`,
     `best`,
   ].join('/');
@@ -381,6 +377,7 @@ export async function getStreamUrl(
 
   log.info('stream url', url, `<= ${maxHeight}p`);
 
+  log.info('STREAM ARGS', JSON.stringify(args));
 
   try {
     const { stdout } = await execFileAsync(bin, args, {
@@ -393,6 +390,7 @@ export async function getStreamUrl(
   } catch (err) {
     const stderr =
       (err as { stderr?: string }).stderr ?? (err as Error).message;
+    log.error('STREAM STDERR', stderr);
     throw new Error(humanizeError(stderr));
   }
 }

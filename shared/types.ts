@@ -314,6 +314,7 @@ export const IPC = {
   // file management
   FILE_OPEN_LOCATION: 'file:openLocation',
   FILE_OPEN: 'file:open',
+  FILE_OPEN_EXTERNAL: 'file:openExternal',
   PICK_DIRECTORY: 'dialog:pickDirectory',
   PICK_FILE: 'dialog:pickFile',
   // system
