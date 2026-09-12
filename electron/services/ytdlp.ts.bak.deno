@@ -1,4 +1,4 @@
-/**
+﻿/**
  * yt-dlp integration: media analysis (metadata extraction). Download execution
  * lives in download-manager.ts; this module is purely about parsing the rich
  * `--dump-single-json` output into our typed VideoInfo / PlaylistInfo shapes.
@@ -87,18 +87,10 @@ interface RawInfo {
 function binArgsBase(): { bin: string; common: string[] } {
   const s = readSettings();
   const bin = resolveBinary('yt-dlp', s.ytDlpPath);
-
-  // yt-dlp needs a JS runtime (Deno) to solve YouTube's player challenges.
-  const jsRuntimeArgs: string[] = [];
-  const denoPath = resolveBinaryPathOrNull('deno');
-  if (denoPath) {
-    jsRuntimeArgs.push('--js-runtimes', `deno:${denoPath}`);
-  }
-
   const common = [
     '--no-warnings',
-    '--no-playlist',
-    ...jsRuntimeArgs,
+    '--no-playlist', // overridden explicitly for playlist calls
+    '--no-call-home',
   ];
   return { bin, common };
 }

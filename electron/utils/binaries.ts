@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Resolves paths to the yt-dlp and ffmpeg binaries.
  *
  * Resolution order:
@@ -39,7 +39,7 @@ function withExe(name: string): string {
   return isWin ? `${name}.exe` : name;
 }
 
-export type BinaryName = 'yt-dlp' | 'ffmpeg' | 'ffprobe';
+export type BinaryName = 'yt-dlp' | 'ffmpeg' | 'ffprobe' | 'deno';
 
 /**
  * If the user set a custom ffmpeg path, derive the sibling ffprobe path from the
