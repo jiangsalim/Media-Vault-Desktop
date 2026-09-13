@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { UrlInput } from '@/components/UrlInput';
 import { BackToBar } from '@/components/BackToBar';
 import { QualityPanel } from '@/components/video/QualityPanel';
@@ -25,6 +25,45 @@ export function VideoPage() {
   const video = useUiStore((s) => s.currentVideo);
   const analyzing = useUiStore((s) => s.analyzing);
   const [tab, setTab] = useState<Tab>('video');
+  const relayIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Auto-unmute: the first user interaction anywhere in the app sends an
+  // unMute command to the relay iframe, which forwards it to YouTube.
+  // Browsers require a user gesture before allowing audio to play.
+  useEffect(() => {
+    if (!video) return;
+
+    let fired = false;
+
+    const unmute = () => {
+      if (fired) return;
+      fired = true;
+      const iframe = relayIframeRef.current;
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+          '*',
+        );
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ event: 'command', func: 'setVolume', args: [100] }),
+          '*',
+        );
+      }
+      document.removeEventListener('click', unmute, true);
+      document.removeEventListener('keydown', unmute, true);
+      document.removeEventListener('touchstart', unmute, true);
+    };
+
+    document.addEventListener('click', unmute, true);
+    document.addEventListener('keydown', unmute, true);
+    document.addEventListener('touchstart', unmute, true);
+
+    return () => {
+      document.removeEventListener('click', unmute, true);
+      document.removeEventListener('keydown', unmute, true);
+      document.removeEventListener('touchstart', unmute, true);
+    };
+  }, [video?.id]);
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -43,6 +82,7 @@ export function VideoPage() {
       {video && (
         <div className="relative aspect-video w-full overflow-hidden border border-border bg-black">
           <iframe
+            ref={relayIframeRef}
             src={`https://herman-software-website.vercel.app/embed.html?v=${encodeURIComponent(video.id)}`}
             title={video.title}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

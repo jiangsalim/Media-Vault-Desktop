@@ -49,7 +49,7 @@ interface UiState {
   goBack: () => void;
 }
 
-export const useUiStore = create<UiState>((set) => ({
+export const useUiStore = create<UiState>((set, get) => ({
   route: 'home',
   sidebarCollapsed: false,
   analyzing: false,
@@ -60,7 +60,28 @@ export const useUiStore = create<UiState>((set) => ({
   returnTo: null,
   returnLabel: null,
 
-  navigate: (route) => set({ route, returnTo: null, returnLabel: null }),
+  navigate: (route) => {
+    const prev = get().route;
+    const video = get().currentVideo;
+
+    set({ route, returnTo: null, returnLabel: null });
+
+    if (!video) return;
+
+    // Leaving Video page → auto-open the mini player
+    if (prev === 'video' && route !== 'video') {
+      window.mediavault.openMiniPlayer(video.id).catch(() => {
+        /* ignore — mini player is optional */
+      });
+    }
+
+    // Returning to Video page → auto-close the mini player
+    if (route === 'video') {
+      window.mediavault.closeMiniPlayer().catch(() => {
+        /* ignore */
+      });
+    }
+  },
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setAnalyzing: (analyzing) => set({ analyzing }),
   setVideo: (currentVideo) => set({ currentVideo }),

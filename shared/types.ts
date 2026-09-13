@@ -330,4 +330,7 @@ export const IPC = {
   WINDOW_MINIMIZE: 'window:minimize',
   WINDOW_MAXIMIZE: 'window:maximize',
   WINDOW_CLOSE: 'window:close',
+  MINIPLAYER_OPEN: 'miniplayer:open',
+  MINIPLAYER_CLOSE: 'miniplayer:close',
+  MINIPLAYER_IS_OPEN: 'miniplayer:isOpen',
 } as const;

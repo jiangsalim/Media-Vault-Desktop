@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Central IPC registration. Every handler is wrapped so exceptions become a
  * typed IpcResult<T> instead of crashing the renderer bridge.
  */

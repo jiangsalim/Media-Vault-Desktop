@@ -84,6 +84,11 @@ const api = {
   maximize: () => ipcRenderer.send(IPC.WINDOW_MAXIMIZE),
   close: () => ipcRenderer.send(IPC.WINDOW_CLOSE),
 
+  /* mini player */
+  openMiniPlayer: (videoId: string) => invoke<boolean>('miniplayer:open', videoId),
+  closeMiniPlayer: () => invoke<boolean>('miniplayer:close'),
+  isMiniPlayerOpen: () => invoke<boolean>('miniplayer:isOpen'),
+
   /* event subscriptions — return an unsubscribe fn */
   onDownloadProgress: (cb: (item: DownloadItem) => void): (() => void) => {
     const handler = (_e: unknown, item: DownloadItem) => cb(item);

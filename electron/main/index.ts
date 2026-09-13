@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Electron main process entry point.
  *
  * - Creates a frameless, glass-friendly BrowserWindow.
@@ -6,7 +6,7 @@
  * - Registers IPC handlers and the auto-updater.
  * - Handles graceful shutdown (kills in-flight yt-dlp processes).
  */
-import { app, BrowserWindow, shell, session } from 'electron';
+import { app, BrowserWindow, shell, session, ipcMain } from 'electron';
 import { join, dirname, extname } from 'node:path';
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -28,6 +28,8 @@ const RENDERER_DIST = join(__dirname, '../../dist');
 const PRELOAD = join(__dirname, '../preload/index.mjs');
 
 let mainWindow: BrowserWindow | null = null;
+let miniPlayerWindow: BrowserWindow | null = null;
+let miniPlayerVideoId: string | null = null;
 const getWindow = () => mainWindow;
 
 // Enforce single instance — focus existing window if a second launch occurs.
@@ -162,8 +164,57 @@ function createWindow(): void {
 
   // Open external links in the user's browser, never inside the app.
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Allow our relay's mini-player popout to open as a native Electron window.
+    if (
+      url.startsWith('https://herman-software-website.vercel.app/embed.html') &&
+      url.includes('popout=1')
+    ) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 480,
+          height: 320,
+          minWidth: 320,
+          minHeight: 200,
+          frame: true,
+          alwaysOnTop: true,
+          resizable: true,
+          title: 'MediaVault Mini Player',
+          backgroundColor: '#000000',
+          webPreferences: {
+            sandbox: true,
+            contextIsolation: true,
+            nodeIntegration: false,
+          },
+        },
+      };
+    }
+
+    // Everything else → open in the user's default browser
     if (url.startsWith('https:')) shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // Mini player IPC handlers (registered here to avoid circular imports)
+  ipcMain.handle('miniplayer:open', (_e, videoId: string) => {
+    openMiniPlayer(videoId);
+    return true;
+  });
+  ipcMain.handle('miniplayer:close', () => {
+    closeMiniPlayer();
+    return true;
+  });
+  ipcMain.handle('miniplayer:isOpen', () => {
+    return isMiniPlayerOpen();
+  });
+
+  // Track the mini player window when it opens via window.open()
+  mainWindow.webContents.on('did-create-window', (childWindow) => {
+    miniPlayerWindow = childWindow;
+    childWindow.on('closed', () => {
+      miniPlayerWindow = null;
+      miniPlayerVideoId = null;
+    });
   });
 
   if (VITE_DEV_SERVER_URL) {
@@ -182,6 +233,66 @@ function createWindow(): void {
 
   setupUpdater(mainWindow);
 }
+
+/** Open the mini-player window for a video ID. Reuses if already open. */
+export function openMiniPlayer(videoId: string): void {
+  if (!videoId) return;
+
+  // Already open for the same video → just focus it
+  if (miniPlayerWindow && !miniPlayerWindow.isDestroyed() && miniPlayerVideoId === videoId) {
+    miniPlayerWindow.focus();
+    return;
+  }
+
+  // Close any existing window for a different video
+  if (miniPlayerWindow && !miniPlayerWindow.isDestroyed()) {
+    miniPlayerWindow.close();
+  }
+
+  miniPlayerVideoId = videoId;
+
+  const url = `https://herman-software-website.vercel.app/embed.html?v=${encodeURIComponent(videoId)}&popout=1`;
+
+  miniPlayerWindow = new BrowserWindow({
+    width: 480,
+    height: 320,
+    minWidth: 320,
+    minHeight: 200,
+    frame: true,
+    alwaysOnTop: true,
+    resizable: true,
+    title: 'MediaVault Mini Player',
+    backgroundColor: '#000000',
+    webPreferences: {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  miniPlayerWindow.setMenuBarVisibility(false);
+  miniPlayerWindow.loadURL(url);
+
+  miniPlayerWindow.on('closed', () => {
+    miniPlayerWindow = null;
+    miniPlayerVideoId = null;
+  });
+}
+
+/** Close the mini-player window if it's open. */
+export function closeMiniPlayer(): void {
+  if (miniPlayerWindow && !miniPlayerWindow.isDestroyed()) {
+    miniPlayerWindow.close();
+  }
+  miniPlayerWindow = null;
+  miniPlayerVideoId = null;
+}
+
+/** Is the mini player currently open? */
+export function isMiniPlayerOpen(): boolean {
+  return !!miniPlayerWindow && !miniPlayerWindow.isDestroyed();
+}
+
 
 app.whenReady().then(() => {
   installYouTubeReferer();
