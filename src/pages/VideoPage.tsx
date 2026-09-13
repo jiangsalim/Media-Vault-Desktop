@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState } from 'react';
 import { UrlInput } from '@/components/UrlInput';
 import { BackToBar } from '@/components/BackToBar';
 import { QualityPanel } from '@/components/video/QualityPanel';
@@ -11,8 +11,6 @@ import { useUiStore } from '@/store/useUiStore';
 import { cn } from '@/lib/cn';
 import { formatDuration } from '@/lib/format';
 
-/** Cache stream URL promises per video URL. */
-const streamUrlCache = new Map<string, Promise<string>>();
 
 type Tab = 'video' | 'audio' | 'subtitles' | 'thumbnails';
 
@@ -40,7 +38,20 @@ export function VideoPage() {
       <UrlInput autoFocus={false} />
 
       {/* In-app video preview — native <video> via yt-dlp direct stream URL */}
-      {video && <VideoPlayer video={video} />}
+      {/* Video preview via our hosted Vercel relay (real HTTPS origin that
+          YouTube trusts; bypasses SABR + Error 153 entirely). */}
+      {video && (
+        <div className="relative aspect-video w-full overflow-hidden border border-border bg-black">
+          <iframe
+            src={`https://herman-software-website.vercel.app/embed.html?v=${encodeURIComponent(video.id)}`}
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            referrerPolicy="strict-origin-when-cross-origin"
+            className="absolute inset-0 h-full w-full border-0"
+          />
+        </div>
+      )}
 
       {analyzing && !video ? (
         <VideoSkeleton />
@@ -94,82 +105,6 @@ export function VideoPage() {
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*                        Custom video player                          */
-/* ------------------------------------------------------------------ */
-
-function VideoPlayer({ video }: { video: { url: string; title: string; thumbnails: { url: string }[] } }) {
-  const [src, setSrc] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    let promise = streamUrlCache.get(video.url);
-    if (!promise) {
-      promise = window.mediavault.getStreamUrl(video.url, 720);
-      streamUrlCache.set(video.url, promise);
-      setTimeout(() => streamUrlCache.delete(video.url), 5 * 60 * 1000);
-    }
-
-    promise
-      .then((url) => { if (!cancelled) setSrc(url); })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Failed to load preview');
-        }
-        streamUrlCache.delete(video.url);
-      })
-      .finally(() => { if (!cancelled) setLoading(false); });
-
-    return () => { cancelled = true; };
-  }, [video.url]);
-
-  const poster = video.thumbnails.at(-1)?.url;
-
-  if (loading) {
-    return (
-      <div className="relative aspect-video w-full overflow-hidden border border-border bg-black">
-        {poster && <img src={poster} alt="" className="h-full w-full object-cover opacity-40" />}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex items-center gap-2 text-xs text-white/80">
-            <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-            Loading preview…
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !src) {
-    return (
-      <div className="relative aspect-video w-full overflow-hidden border border-border bg-black">
-        {poster && <img src={poster} alt="" className="h-full w-full object-cover opacity-60" />}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-          <p className="text-xs text-white/70">{error || 'Preview unavailable'}</p>
-          <button
-            onClick={() => window.mediavault.openExternal(video.url)}
-            className="btn-primary text-[10px]"
-          >
-            Open on YouTube
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative aspect-video w-full overflow-hidden border border-border bg-black">
-      <video src={src} poster={poster} controls autoPlay muted playsInline className="h-full w-full">
-        Your browser does not support the video tag.
-      </video>
     </div>
   );
 }

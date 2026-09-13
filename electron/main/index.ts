@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Electron main process entry point.
  *
  * - Creates a frameless, glass-friendly BrowserWindow.
@@ -6,7 +6,7 @@
  * - Registers IPC handlers and the auto-updater.
  * - Handles graceful shutdown (kills in-flight yt-dlp processes).
  */
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, session } from 'electron';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { initDatabase } from '../db/database';
@@ -34,6 +34,29 @@ if (!gotLock) {
   app.quit();
 }
 
+/**
+ * Set the Referer/Origin headers for requests to youtube-nocookie.com so that
+ * YouTube accepts the embed request from inside Electron. The relay page lives
+ * on our Vercel domain — we identify ourselves as coming from there.
+ */
+function installYouTubeReferer(): void {
+  const REFERER = 'https://herman-software-website.vercel.app/';
+  const ORIGIN = 'https://herman-software-website.vercel.app';
+
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    {
+      urls: [
+        'https://www.youtube.com/embed/*',
+        'https://www.youtube-nocookie.com/embed/*',
+      ],
+    },
+    (details: Electron.OnBeforeSendHeadersListenerDetails, callback: (beforeSendResponse: Electron.BeforeSendResponse) => void) => {
+      details.requestHeaders['Referer'] = REFERER;
+      details.requestHeaders['Origin'] = ORIGIN;
+      callback({ requestHeaders: details.requestHeaders });
+    },
+  );
+}
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -73,6 +96,7 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  installYouTubeReferer();
   initDatabase();
   // Ensure the default download directory exists on first run.
   readSettings();
