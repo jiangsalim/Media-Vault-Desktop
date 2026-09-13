@@ -36,7 +36,6 @@ const api = {
   /* analysis */
   analyzeUrl: (url: string) => invoke<VideoInfo>(IPC.ANALYZE_URL, url),
   analyzePlaylist: (url: string) => invoke<PlaylistInfo>(IPC.ANALYZE_PLAYLIST, url),
-  getStreamUrl: (url: string, maxHeight = 720) => invoke<string>(IPC.STREAM_GET_URL, url, maxHeight),
   searchYoutube: (query: string, count?: number) =>
     invoke<VideoSearchResult[]>(IPC.SEARCH_YT, query, count ?? 10),
   getTrending: (forceRefresh = false) =>
