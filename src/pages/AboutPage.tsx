@@ -1,5 +1,16 @@
 ﻿/** About page — Herman Software Solutions branding, socials, version, shortcuts. */
+import { useEffect, useState } from 'react';
 export function AboutPage() {
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+    window.mediavault.getVersion()
+      .then((v) => { if (!cancelled) setVersion(v); })
+      .catch(() => { /* ignore */ });
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
       <h1 className="section-title">About</h1>
@@ -47,7 +58,7 @@ export function AboutPage() {
         <p className="label mb-3">Version</p>
         <div className="border border-border">
           {[
-            ['MediaVault', '1.0.0'],
+            ['MediaVault', version || '—'],
             ['Electron', '32.x'],
             ['React', '18.3'],
             ['Vite', '5.4'],
